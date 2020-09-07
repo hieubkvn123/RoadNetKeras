@@ -5,6 +5,8 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow.keras.layers import *
+from tensorflow.keras.models import Model
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler
 from roadnet import RoadNet
 
 DATA_DIR = 'data/'
@@ -101,3 +103,6 @@ cv2.imshow("Sample Edge", labels_edges[random_id])
 cv2.imshow("Sample Surface", labels_segments[random_id])
 cv2.imshow("Sample Centerline", labels_centerlines[random_id])
 cv2.waitKey(0)
+
+net = RoadNet()
+model = net.get_model()
