@@ -4,6 +4,7 @@ import numpy as np
 
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
+from tensorflow.keras.regularizers import l2
 
 class RoadSurfaceNet(object):
     def __init__(self, input_shape=(128,128,3), name='surface'):
@@ -76,7 +77,7 @@ class RoadSurfaceNet(object):
 
         ### concatenated output ###
         concat = tf.keras.layers.concatenate((side_1, side_2, side_3, side_4, side_5), axis=3)
-        concat = Conv2D(1, kernel_size=(1,1), activation='relu', name='surface_concat')(concat)
+        concat = Conv2D(1, kernel_size=(1,1), activation='relu', name='surface_concat', kernel_regularizer=l2(l2=1e-4))(concat)
 
 
         ### We need to pass the original inputs and the final concat to centerline and edge networks ###
@@ -141,7 +142,7 @@ class SideNet(object):
         side_4 = Conv2DTranspose(1, kernel_size=(8,8), strides=(8,8), padding='same', name=self.name+'_output_4')(side_4)
         
         concat = tf.keras.layers.concatenate((side_1, side_2, side_3, side_4), axis=3)
-        concat = Conv2D(1, kernel_size=(1,1), activation='relu', name=self.name+'_concat')(concat) 
+        concat = Conv2D(1, kernel_size=(1,1), activation='relu', name=self.name+'_concat', kernel_regularizer=l2(l2=1e-4))(concat) 
 
         model = Model(inputs=[input_1, input_2], outputs=[side_1, side_2, side_3, side_4, concat], name=self.name)
 

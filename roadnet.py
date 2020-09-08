@@ -15,31 +15,35 @@ class RoadNet(object):
         self.centerline_net = SideNet(name='centerline', input_shape=input_shape)
         self.edge_net = SideNet(name='edge', input_shape=input_shape)
         self.surface_net = RoadSurfaceNet(input_shape=input_shape)
-        self.beta = 0.1
-
-
+        self.beta = 0.1 ### For balanced crossentropy ###
+        self.lambda_ = 2e-4 ### For generalization ###
+        
+        ### For weights of the loss components ###
+        self.alpha = 1.0 # for balanced crossentropy
+        self.gamma = 1.0 # for regularization 
+        self.eta   = 1.0 # for generalization
 
     def weighted_binary_crossentropy(self):
         w1 = self.beta
         w2 = 1 - self.beta
     
-        '''
-        w1 and w2 are the weights for the two classes.
-        Computes weighted binary crossentropy
-        Use like so:  model.compile(loss=weighted_binary_crossentropy(), optimizer="adam", metrics=["accuracy"])
-        '''
-
         def loss(y_true, y_pred):
-            # avoid absolute 0
-            y_pred = K.clip(y_pred, K.epsilon(), 1 - K.epsilon())
-            ones = tf.ones_like(y_true)
+            # transform predicted map to a probability map 
+            y_pred = K.clip(y_pred, K.epsilon(), 1 - K.epsilon()) # need epsilon to avoid absolute zeros
+            ones = tf.ones_like(y_true) # create a mask
             msk = tf.equal(y_true, ones)
-            # tensor of booleans of length == y_true; true means that the true class is 1
 
+            ### Calculate weighted binary crossentropy loss with beta=0.1 to signify the imporance of loss where y==1 ###
             res, _ = tf.map_fn(lambda x: (tf.multiply(-tf.math.log(x[0]), w1) if x[1] is True else tf.multiply(-tf.math.log(1 - x[0]), w2), x[1]),
                                (y_pred, msk), dtype=(tf.float32, tf.bool))
 
-            return res
+            ### L2 normalization ###
+            ### l2 norm = 1/(2|X|) * ||Y- P||2
+            l2_norm = tf.nn.l2_normalize(y_pred - tf.cast(msk, dtype=tf.float32)) * (1/(y_pred.shape[1] * y_pred.shape[2]))
+
+            
+
+            return res + l2_norm
 
         return loss
     
