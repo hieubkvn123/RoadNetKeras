@@ -10,6 +10,12 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningR
 from roadnet import RoadNet
 
 DATA_DIR = 'data/'
+NUM_TRAIN_IMG=100
+EPOCHS = 1000
+BATCH_SIZE=32
+PATIENCE=15
+MODEL_CHECKPOINT = 'checkpoints/model.weights.hdf5'
+
 TRAIN_IMG_PICKLE = 'data/img.pickle'
 TRAIN_SEG_PICKLE = 'data/segments.pickle'
 TRAIN_EDG_PICKLE = 'data/edges.pickle'
@@ -28,7 +34,7 @@ labels_centerlines = []
 def cropping_images(img, crop_size=(128,128)):
     crops = []
 
-    H, W, C = img.shape
+    H, W = img.shape
 
     ### Get the ratio to resize ###
     ratio_h = int(H/128)
@@ -61,10 +67,19 @@ if(not os.path.exists(TRAIN_IMG_PICKLE) or
         print("[INFO] Processing training image with id %d ..." % entry)
 
         print(abs_img_path)
-        img = cv2.imread(abs_img_path)
-        edge = cv2.imread(abs_edge_path)
-        surface = cv2.imread(abs_surface_path)
-        centerline = cv2.imread(abs_centerline_path)
+        img = cv2.cvtColor(cv2.imread(abs_img_path), cv2.COLOR_BGR2GRAY)
+        edge = cv2.cvtColor(cv2.imread(abs_edge_path), cv2.COLOR_BGR2GRAY)
+        surface = cv2.cvtColor(cv2.imread(abs_surface_path), cv2.COLOR_BGR2GRAY)
+        centerline = cv2.cvtColor(cv2.imread(abs_centerline_path), cv2.COLOR_BGR2GRAY)
+
+        edge[edge < 250] = 1
+        edge[edge >= 250] = 0
+
+        surface[surface < 250] = 1
+        surface[surface >= 250] = 0
+
+        centerline[centerline < 250] = 1
+        centerline[centerline >= 250] = 0
 
         img_crops = cropping_images(img)
         surface_crops = cropping_images(surface) 
@@ -89,20 +104,58 @@ else:
     labels_edges = pickle.load(open(TRAIN_EDG_PICKLE, 'rb'))
     labels_centerlines = pickle.load(open(TRAIN_CEN_PICKLE, 'rb'))
 
-train_images = np.array(train_images)
-labels_segments = np.array(labels_segments)
-labels_edges = np.array(labels_edges)
-labels_centerlines = np.array(labels_centerlines)
+train_images = np.array(train_images)[:NUM_TRAIN_IMG]
+labels_segments = np.array(labels_segments)[:NUM_TRAIN_IMG].astype(np.float32)
+labels_edges = np.array(labels_edges)[:NUM_TRAIN_IMG].astype(np.float32)
+labels_centerlines = np.array(labels_centerlines)[:NUM_TRAIN_IMG].astype(np.float32)
+
 print('=============================================================')
 print('[INFO] Summary : %d cropped images,\n %d cropped surfaces,\n %d cropped edges,\n %d cropped centerlines' \
         % (train_images.shape[0], labels_segments.shape[0], labels_edges.shape[0], labels_centerlines.shape[0])) 
  
-random_id = np.random.randint(0, train_images.shape[0])
-cv2.imshow("Sample Input", train_images[random_id])
-cv2.imshow("Sample Edge", labels_edges[random_id])
-cv2.imshow("Sample Surface", labels_segments[random_id])
-cv2.imshow("Sample Centerline", labels_centerlines[random_id])
-cv2.waitKey(0)
+#random_id = np.random.randint(0, train_images.shape[0])
+#cv2.imshow("Sample Input", train_images[random_id])
+#cv2.imshow("Sample Edge", labels_edges[random_id])
+#cv2.imshow("Sample Surface", labels_segments[random_id])
+#cv2.imshow("Sample Centerline", labels_centerlines[random_id])
+#cv2.waitKey(0)
 
 net = RoadNet()
 model = net.get_model()
+print(model.summary())
+
+def lr_decay(i, lr):
+    if( i < 10):
+        return lr
+    else:
+        return lr * tf.math.exp(-0.1)
+
+callbacks = [
+    ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True),
+    EarlyStopping(patience=PATIENCE, verbose=1),
+    LearningRateScheduler(lr_decay)
+]
+
+balanced_loss = net.weighted_binary_crossentropy()
+
+losses = {
+    'surface_final_output' : balanced_loss,# net.weighted_binary_crossentropy,
+    'edge_final_output' : balanced_loss,# net.weighted_binary_crossentropy,
+    'line_final_output' : balanced_loss# net.weighted_binary_crossentropy
+}
+
+loss_weights = {
+    'surface_final_output' : 1,
+    'edge_final_output' : 1,
+    'line_final_output' : 1
+}
+
+y = {
+     'surface_final_output' : labels_segments,
+     'edge_final_output' : labels_edges,
+     'line_final_output' : labels_centerlines
+}
+
+adam = tf.keras.optimizers.Adam(lr=1e-3, beta_1=0.9,beta_2=0.999,amsgrad=True)
+model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights)
+model.fit(train_images, y=y, epochs=EPOCHS, batch_size=BATCH_SIZE, callbacks=callbacks)

@@ -24,8 +24,8 @@ class RoadSurfaceNet(object):
     def get_model(self):
         ### Stage 1 ###
         inputs = Input(shape=self.input_shape)
-        conv_1 = Conv2D(64, kernel_size=(3,3), activation=self.selu, padding='same')(inputs)
-        conv_1 = Conv2D(64, kernel_size=(3,3), activation=self.selu, padding='same')(conv_1)
+        conv_1 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(inputs)
+        conv_1 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(conv_1)
         pool_1 = MaxPooling2D(pool_size=(2,2))(conv_1)
 
         ### First output ###
@@ -33,8 +33,8 @@ class RoadSurfaceNet(object):
         side_1 = Conv2D(1, kernel_size=(1,1), activation='relu', padding='same', name='surface_output_1')(conv_1)
 
         ### Stage 2 ###
-        conv_2 = Conv2D(128, kernel_size=(3,3), activation=self.selu, padding='same')(pool_1)
-        conv_2 = Conv2D(128, kernel_size=(3,3), activation=self.selu, padding='same')(conv_2)
+        conv_2 = Conv2D(128, kernel_size=(3,3), activation='selu', padding='same')(pool_1)
+        conv_2 = Conv2D(128, kernel_size=(3,3), activation='selu', padding='same')(conv_2)
         pool_2 = MaxPooling2D(pool_size=(2,2))(conv_2)
 
         ### Second output ###
@@ -43,9 +43,9 @@ class RoadSurfaceNet(object):
         side_2 = Conv2DTranspose(1, kernel_size=(2,2), strides=(2,2), padding='same', name='surface_output_2')(side_2)
 
         ### Stage 3 ###
-        conv_3 = Conv2D(256, kernel_size=(3,3), activation=self.selu, padding='same')(pool_2)
-        conv_3 = Conv2D(256, kernel_size=(3,3), activation=self.selu, padding='same')(conv_3)
-        conv_3 = Conv2D(256, kernel_size=(3,3), activation=self.selu, padding='same')(conv_3)
+        conv_3 = Conv2D(256, kernel_size=(3,3), activation='selu', padding='same')(pool_2)
+        conv_3 = Conv2D(256, kernel_size=(3,3), activation='selu', padding='same')(conv_3)
+        conv_3 = Conv2D(256, kernel_size=(3,3), activation='selu', padding='same')(conv_3)
         pool_3 = MaxPooling2D(pool_size=(2,2))(conv_3)
 
         ### Third output ###
@@ -54,9 +54,9 @@ class RoadSurfaceNet(object):
         side_3 = Conv2DTranspose(1, kernel_size=(4,4), strides=(4,4), padding='same', name='surface_output_3')(side_3)
 
         ### Stage 4 ###
-        conv_4 = Conv2D(512, kernel_size=(3,3), activation=self.selu, padding='same')(pool_3)
-        conv_4 = Conv2D(512, kernel_size=(3,3), activation=self.selu, padding='same')(conv_4)
-        conv_4 = Conv2D(512, kernel_size=(3,3), activation=self.selu, padding='same')(conv_4)
+        conv_4 = Conv2D(512, kernel_size=(3,3), activation='selu', padding='same')(pool_3)
+        conv_4 = Conv2D(512, kernel_size=(3,3), activation='selu', padding='same')(conv_4)
+        conv_4 = Conv2D(512, kernel_size=(3,3), activation='selu', padding='same')(conv_4)
         pool_4 = MaxPooling2D(pool_size=(2,2))(conv_4)
 
         ### Fourth output ###
@@ -65,9 +65,9 @@ class RoadSurfaceNet(object):
         side_4 = Conv2DTranspose(1, kernel_size=(8,8), strides=(8,8), padding='same', name='surface_output_4')(side_4)
 
         ### Stage 5 ###
-        conv_5 = Conv2D(512, kernel_size=(3,3), activation=self.selu, padding='same')(pool_4) 
-        conv_5 = Conv2D(512, kernel_size=(3,3), activation=self.selu, padding='same')(conv_5)
-        conv_5 = Conv2D(512, kernel_size=(3,3), activation=self.selu, padding='same')(conv_5)
+        conv_5 = Conv2D(512, kernel_size=(3,3), activation='selu', padding='same')(pool_4) 
+        conv_5 = Conv2D(512, kernel_size=(3,3), activation='selu', padding='same')(conv_5)
+        conv_5 = Conv2D(512, kernel_size=(3,3), activation='selu', padding='same')(conv_5)
 
         ### Fifth output ###
         ### Size = W/16 * H/16 * 1 ###
@@ -110,31 +110,31 @@ class SideNet(object):
         ### Concatenate the two inputs along the channels ###
         concat_input = tf.keras.layers.concatenate((input_1, input_2), axis=3)
         
-        conv_1 = Conv2D(32, kernel_size=(3,3), activation=self.selu, padding='same')(concat_input)
-        conv_1 = Conv2D(32, kernel_size=(3,3), activation=self.selu, padding='same')(conv_1)
+        conv_1 = Conv2D(32, kernel_size=(3,3), activation='selu', padding='same')(concat_input)
+        conv_1 = Conv2D(32, kernel_size=(3,3), activation='selu', padding='same')(conv_1)
         pool_1 = MaxPooling2D(pool_size=(2,2))(conv_1)
 
         ### First output ###
         side_1 = Conv2D(1, kernel_size=(1,1), activation='relu', name=self.name+'_output_1')(conv_1)
 
-        conv_2 = Conv2D(64, kernel_size=(3,3), activation=self.selu, padding='same')(pool_1)
-        conv_2 = Conv2D(64, kernel_size=(3,3), activation=self.selu, padding='same')(conv_2)
+        conv_2 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(pool_1)
+        conv_2 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(conv_2)
         pool_2 = MaxPooling2D(pool_size=(2,2))(conv_2)
 
         ### Second output ###
         side_2 = Conv2D(1, kernel_size=(1,1), activation='relu')(conv_2)
         side_2 = Conv2DTranspose(1, kernel_size=(2,2), strides=(2,2), padding='same', name=self.name+'_output_2')(side_2)
 
-        conv_3 = Conv2D(128, kernel_size=(3,3), activation=self.selu, padding='same')(pool_2)
-        conv_3 = Conv2D(128, kernel_size=(3,3), activation=self.selu, padding='same')(conv_3)
+        conv_3 = Conv2D(128, kernel_size=(3,3), activation='selu', padding='same')(pool_2)
+        conv_3 = Conv2D(128, kernel_size=(3,3), activation='selu', padding='same')(conv_3)
         pool_3 = MaxPooling2D(pool_size=(2,2))(conv_3)
 
         ### Third output ###
         side_3 = Conv2D(1, kernel_size=(1,1), activation='relu')(conv_3)
         side_3 = Conv2DTranspose(1, kernel_size=(4,4), strides=(4,4), padding='same', name=self.name+'_output_3')(side_3)
 
-        conv_4 = Conv2D(256, kernel_size=(3,3), activation=self.selu, padding='same')(pool_3)
-        conv_4 = Conv2D(256, kernel_size=(3,3), activation=self.selu, padding='same')(conv_4)
+        conv_4 = Conv2D(256, kernel_size=(3,3), activation='selu', padding='same')(pool_3)
+        conv_4 = Conv2D(256, kernel_size=(3,3), activation='selu', padding='same')(conv_4)
 
         ### Fourth output ###
         side_4 = Conv2D(1, kernel_size=(1,1), activation='relu')(conv_4)
