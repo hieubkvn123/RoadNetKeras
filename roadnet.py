@@ -40,7 +40,6 @@ class RoadNet(object):
             ### L2 normalization ###
             ### l2 norm = 1/(2|X|) * ||Y- P||2
             l2_norm = tf.nn.l2_normalize(y_pred - tf.cast(msk, dtype=tf.float32)) * (1/(y_pred.shape[1] * y_pred.shape[2]))
-
             
 
             return res + l2_norm
@@ -57,8 +56,26 @@ class RoadNet(object):
         fused_surface = Lambda(lambda x: x, name='surface_final_output')(fused_surface)
         fused_edge    = Lambda(lambda x: x, name='edge_final_output')(fused_edge)
         fused_line    = Lambda(lambda x: x, name='line_final_output')(fused_line)
+        
+        s1_surface = Lambda(lambda x : x, name='surface_side_output_1')(s1_surface)
+        s2_surface = Lambda(lambda x : x, name='surface_side_output_2')(s2_surface)
+        s3_surface = Lambda(lambda x : x, name='surface_side_output_3')(s3_surface)
+        s4_surface = Lambda(lambda x : x, name='surface_side_output_4')(s4_surface)
+        s5_surface = Lambda(lambda x : x, name='surface_side_output_5')(s5_surface)
 
-        model = Model(inputs=inputs, outputs=[fused_surface, fused_edge, fused_line])
+        s1_edge = Lambda(lambda x : x, name='edge_side_output_1')(s1_edge)        
+        s2_edge = Lambda(lambda x : x, name='edge_side_output_2')(s2_edge)        
+        s3_edge = Lambda(lambda x : x, name='edge_side_output_3')(s3_edge)        
+        s4_edge = Lambda(lambda x : x, name='edge_side_output_4')(s4_edge) 
+
+        s1_line = Lambda(lambda x : x, name='line_side_output_1')(s1_line)
+        s2_line = Lambda(lambda x : x, name='line_side_output_2')(s2_line)
+        s3_line = Lambda(lambda x : x, name='line_side_output_3')(s3_line)
+        s4_line = Lambda(lambda x : x, name='line_side_output_4')(s4_line)
+        
+        model = Model(inputs=inputs, outputs=[fused_surface, fused_edge, fused_line, s1_surface, s2_surface, s3_surface, s4_surface,s5_surface, \
+                s1_edge, s2_edge, s3_edge, s4_edge, \
+                s1_line, s2_line, s3_line, s4_line])
 
         return model
 

@@ -141,19 +141,66 @@ balanced_loss = net.weighted_binary_crossentropy()
 losses = {
     'surface_final_output' : balanced_loss,# net.weighted_binary_crossentropy,
     'edge_final_output' : balanced_loss,# net.weighted_binary_crossentropy,
-    'line_final_output' : balanced_loss# net.weighted_binary_crossentropy
+    'line_final_output' : balanced_loss,# net.weighted_binary_crossentropy
+    'surface_side_output_1' : balanced_loss, 
+    'surface_side_output_2' : balanced_loss,
+    'surface_side_output_3' : balanced_loss,
+    'surface_side_output_4' : balanced_loss,
+    'surface_side_output_5' : balanced_loss,
+
+    'edge_side_output_1' : balanced_loss, 
+    'edge_side_output_2' : balanced_loss,
+    'edge_side_output_3' : balanced_loss,
+    'edge_side_output_4' : balanced_loss,
+
+    'line_side_output_1' : balanced_loss, 
+    'line_side_output_2' : balanced_loss,
+    'line_side_output_3' : balanced_loss,
+    'line_side_output_4' : balanced_loss
 }
 
 loss_weights = {
     'surface_final_output' : 1,
     'edge_final_output' : 1,
-    'line_final_output' : 1
+    'line_final_output' : 1,
+
+    'surface_side_output_1' : 0.1,
+    'surface_side_output_2' : 0.2,
+    'surface_side_output_3' : 0.3,
+    'surface_side_output_4' : 0.4,
+    'surface_side_output_5' : 0.5,
+ 
+    'edge_side_output_1' : 0.1,
+    'edge_side_output_2' : 0.2,
+    'edge_side_output_3' : 0.3,
+    'edge_side_output_4' : 0.4,
+
+    'line_side_output_1' : 0.1,
+    'line_side_output_2' : 0.2,
+    'line_side_output_3' : 0.3,
+    'line_side_output_4' : 0.4 
 }
 
 y = {
      'surface_final_output' : labels_segments,
      'edge_final_output' : labels_edges,
-     'line_final_output' : labels_centerlines
+     'line_final_output' : labels_centerlines,
+
+     'surface_side_output_1' : labels_segments,
+     'surface_side_output_2' : labels_segments,
+     'surface_side_output_3' : labels_segments,
+     'surface_side_output_4' : labels_segments,
+     'surface_side_output_5' : labels_segments,
+
+     'edge_side_output_1' : labels_edges, 
+     'edge_side_output_2' : labels_edges, 
+     'edge_side_output_3' : labels_edges, 
+     'edge_side_output_4' : labels_edges,
+
+     'line_side_output_1' : labels_centerlines,
+     'line_side_output_2' : labels_centerlines,
+     'line_side_output_3' : labels_centerlines,
+     'line_side_output_4' : labels_centerlines 
 }
 
 adam = tf.keras.optimizers.Adam(lr=1e-3, beta_1=0.9,beta_2=0.999,amsgrad=True)
