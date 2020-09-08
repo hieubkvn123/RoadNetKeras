@@ -11,7 +11,16 @@ from data_loader import test_images, test_labels_segments, test_labels_edges, te
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler
+from argparse import ArgumentParser
 from roadnet import RoadNet
+
+parser = ArgumentParser()
+parser.add_argument('-d', '--dir', required=False, help='Path to data folder')
+parser.add_argument('-n', '--n_train', required=False, help='Number of training partions you want to train')
+parser.add_argument('-i', '--iterations', required=False, help='Number of epochs to train')
+parser.add_argument('-p', '--patience', required=False, help='Number of patient epochs without improvement on loss')
+parser.add_argument('-c', '--checkpoint', required=False, help='Path to checkpoint file')
+args = vars(parser.parse_args())
 
 DATA_DIR = 'data/'
 NUM_TRAIN_IMG=100
@@ -19,6 +28,12 @@ EPOCHS = 1000
 BATCH_SIZE=32
 PATIENCE=15
 MODEL_CHECKPOINT = 'checkpoints/model.weights.hdf5'
+
+if(args['dir']): DATA_DIR=args['dir']
+if(args['n_train']): NUM_TRAIN_IMG=args['n_train')
+if(args['iterations']): EPOCHS=args['iterations']
+if(args['patience']): PATIENCE=args['patience']
+if(args['checkpoint']): MODEL_CHECKPOINT=args['checkpoint']
 
 print('=============================================================')
 print('[INFO] Summary : %d cropped images,\n %d cropped surfaces,\n %d cropped edges,\n %d cropped centerlines' \
