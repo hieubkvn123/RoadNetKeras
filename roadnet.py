@@ -15,11 +15,11 @@ class RoadNet(object):
         self.centerline_net = SideNet(name='centerline', input_shape=input_shape)
         self.edge_net = SideNet(name='edge', input_shape=input_shape)
         self.surface_net = RoadSurfaceNet(input_shape=input_shape)
-        self.beta = 0.1 ### For balanced crossentropy ###
+        self.beta = 0.1 ### For balanced cross-entropy ###
         self.lambda_ = 2e-4 ### For generalization ###
         
         ### For weights of the loss components ###
-        self.alpha = 1.0 # for balanced crossentropy
+        self.alpha = 1.0 # for balanced cross-entropy
         self.gamma = 1.0 # for regularization 
         self.eta   = 1.0 # for generalization
 
@@ -33,7 +33,7 @@ class RoadNet(object):
             ones = tf.ones_like(y_true) # create a mask
             msk = tf.equal(y_true, ones)
 
-            ### Calculate weighted binary crossentropy loss with beta=0.1 to signify the imporance of loss where y==1 ###
+            ### Calculate weighted binary cross-entropy loss with beta=0.1 to signify the importance of loss where y==1 ###
             res, _ = tf.map_fn(lambda x: (tf.multiply(-tf.math.log(x[0]), w1) if x[1] is True else tf.multiply(-tf.math.log(1 - x[0]), w2), x[1]),
                                (y_pred, msk), dtype=(tf.float32, tf.bool))
 

@@ -5,7 +5,7 @@
 2. File annotation :
 	- data_loader.py : Contains functionalities to load training and testing data from the data folder.
 	- models.py : Defines the architectures of the sub-networks.
-	- roadnet.py : Defines the complete architecture of roadnet and loss customization.
+	- roadnet.py : Defines the complete architecture of RoadNet and loss customization.
 	- train.py : The main training scripts.
 
 3. Training :
