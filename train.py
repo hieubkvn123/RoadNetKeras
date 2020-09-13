@@ -3,12 +3,14 @@ import cv2
 import pickle
 import numpy as np
 import tensorflow as tf
+import pandas as pd
 
 ### Loading data ###
 from data_loader import train_images, labels_segments, labels_edges, labels_centerlines
 from data_loader import test_images, test_labels_segments, test_labels_edges, test_labels_centerlines
 
 from tensorflow.keras.layers import *
+from tensorflow.keras import backend as K
 from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler
 from argparse import ArgumentParser
@@ -26,11 +28,12 @@ DATA_DIR = 'data/'
 NUM_TRAIN_IMG=100
 EPOCHS = 1000
 BATCH_SIZE=32
-PATIENCE=15
+PATIENCE=100
 MODEL_CHECKPOINT = 'checkpoints/model.weights.hdf5'
 
 if(args['dir']): DATA_DIR=args['dir']
-if(args['n_train']): NUM_TRAIN_IMG=args['n_train')
+if(args['n_train']): NUM_TRAIN_IMG=args['n_train']
+if(not args['n_train']): NUM_TRAIN_IMG=train_images.shape[0]
 if(args['iterations']): EPOCHS=args['iterations']
 if(args['patience']): PATIENCE=args['patience']
 if(args['checkpoint']): MODEL_CHECKPOINT=args['checkpoint']
@@ -49,12 +52,21 @@ print('[INFO] Summary : %d cropped images,\n %d cropped surfaces,\n %d cropped e
 net = RoadNet()
 model = net.get_model()
 print(model.summary())
+if(os.path.exists(MODEL_CHECKPOINT)):
+    model.load_weights(MODEL_CHECKPOINT)
+    print('[INFO] Transfer learning from check point. ..')
 
 def lr_decay(i, lr):
-    if( i < 10):
-        return lr
+    if( i >= 160):
+        return 1e-5
+    elif( i >= 120):
+        return 5e-5
+    elif( i >= 80 ):
+        return 1e-4
+    elif( i >= 40):
+        return 5e-4
     else:
-        return lr * tf.math.exp(-0.1)
+        return lr 
 
 callbacks = [
     ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True),
@@ -85,6 +97,28 @@ losses = {
     'line_side_output_4' : balanced_loss
 }
 
+'''
+losses = {
+    'surface_final_output' : 'sparse_categorical_crossentropy',# net.weighted_binary_crossentropy,
+    'edge_final_output' : 'sparse_categorical_crossentropy',# net.weighted_binary_crossentropy,
+    'line_final_output' : 'sparse_categorical_crossentropy',# net.weighted_binary_crossentropy
+    'surface_side_output_1' : 'sparse_categorical_crossentropy', 
+    'surface_side_output_2' : 'sparse_categorical_crossentropy',
+    'surface_side_output_3' : 'sparse_categorical_crossentropy',
+    'surface_side_output_4' : 'sparse_categorical_crossentropy',
+    'surface_side_output_5' : 'sparse_categorical_crossentropy',
+
+    'edge_side_output_1' : 'sparse_categorical_crossentropy', 
+    'edge_side_output_2' : 'sparse_categorical_crossentropy',
+    'edge_side_output_3' : 'sparse_categorical_crossentropy',
+    'edge_side_output_4' : 'sparse_categorical_crossentropy',
+
+    'line_side_output_1' : 'sparse_categorical_crossentropy', 
+    'line_side_output_2' : 'sparse_categorical_crossentropy',
+    'line_side_output_3' : 'sparse_categorical_crossentropy',
+    'line_side_output_4' : 'sparse_categorical_crossentropy'
+}
+'''
 loss_weights = {
     'surface_final_output' : 1,
     'edge_final_output' : 1,
@@ -129,6 +163,40 @@ y = {
      'line_side_output_4' : labels_centerlines 
 }
 
-adam = tf.keras.optimizers.Adam(lr=1e-3, beta_1=0.9,beta_2=0.999,amsgrad=True)
+y_test = {
+     'surface_final_output' : test_labels_segments,
+     'edge_final_output' : test_labels_edges,
+     'line_final_output' : test_labels_centerlines,
+
+     'surface_side_output_1' : test_labels_segments,
+     'surface_side_output_2' : test_labels_segments,
+     'surface_side_output_3' : test_labels_segments,
+     'surface_side_output_4' : test_labels_segments,
+     'surface_side_output_5' : test_labels_segments,
+
+     'edge_side_output_1' : test_labels_edges, 
+     'edge_side_output_2' : test_labels_edges, 
+     'edge_side_output_3' : test_labels_edges, 
+     'edge_side_output_4' : test_labels_edges,
+
+     'line_side_output_1' : test_labels_centerlines,
+     'line_side_output_2' : test_labels_centerlines,
+     'line_side_output_3' : test_labels_centerlines,
+     'line_side_output_4' : test_labels_centerlines 
+}
+
+adam = tf.keras.optimizers.Adam(lr=1e-4, beta_1=0.9,beta_2=0.999,amsgrad=True)
 model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights)
-model.fit(train_images, y=y, epochs=EPOCHS, batch_size=BATCH_SIZE, callbacks=callbacks)
+history = model.fit(train_images, y=y, validation_data=(test_images, y_test), epochs=EPOCHS, batch_size=BATCH_SIZE, callbacks=callbacks)
+
+data_frame = pd.DataFrame()
+data_frame['total_loss'] = history.history['loss']
+data_frame['val_total_loss'] = history.history['val_loss']
+data_frame['surface_final_output_loss'] = history.history['surface_final_output_loss']
+data_frame['val_surface_final_output_loss'] = history.history['val_surface_final_output_loss']
+data_frame['edge_final_output_loss'] = history.history['edge_final_output_loss']
+data_frame['val_edge_final_output_loss'] = history.history['val_edge_final_output_loss']
+data_frame['line_final_output_loss'] = history.history['line_final_output_loss']
+data_frame['val_line_final_output_loss'] = history.history['val_line_final_output_loss']
+
+data_frame.to_csv('training_summary.csv')

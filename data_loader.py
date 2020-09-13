@@ -3,7 +3,7 @@ import cv2
 import pickle
 import numpy as np
 
-NUM_TRAIN_IMG = 100
+NUM_TRAIN_IMG = -1 #100
 DATA_DIR = 'data/'
 TRAIN_IMG_PICKLE = 'data/img.pickle'
 TRAIN_SEG_PICKLE = 'data/segments.pickle'
@@ -17,6 +17,7 @@ TEST_CEN_PICKLE = 'data/test_centerlines.pickle'
 
 TRAIN_SET = [2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 TEST_SET  = [1,16,17,18,19,20]
+H, W, C = 128, 128, 1
 
 train_images = []
 test_images  = []
@@ -102,10 +103,11 @@ else:
     labels_edges = pickle.load(open(TRAIN_EDG_PICKLE, 'rb'))
     labels_centerlines = pickle.load(open(TRAIN_CEN_PICKLE, 'rb'))
 
-train_images = np.array(train_images)[:NUM_TRAIN_IMG]
-labels_segments = np.array(labels_segments)[:NUM_TRAIN_IMG].astype(np.float32)
-labels_edges = np.array(labels_edges)[:NUM_TRAIN_IMG].astype(np.float32)
-labels_centerlines = np.array(labels_centerlines)[:NUM_TRAIN_IMG].astype(np.float32)
+if(NUM_TRAIN_IMG < 0): NUM_TRAIN_IMG=len(train_images)
+train_images = (np.array(train_images)[:NUM_TRAIN_IMG] / 255.0).reshape(-1, H, W, C)
+labels_segments = np.array(labels_segments)[:NUM_TRAIN_IMG].reshape(-1, H, W, C).astype(np.float32)
+labels_edges = np.array(labels_edges)[:NUM_TRAIN_IMG].reshape(-1, H, W, C).astype(np.float32)
+labels_centerlines = np.array(labels_centerlines)[:NUM_TRAIN_IMG].reshape(-1, H, W, C).astype(np.float32)
 
 
 if(not os.path.exists(TEST_IMG_PICKLE) or 
@@ -157,8 +159,8 @@ else:
     test_labels_edges = pickle.load(open(TEST_EDG_PICKLE, 'rb'))
     test_labels_centerlines = pickle.load(open(TEST_CEN_PICKLE, 'rb'))
 
-test_images = np.array(test_images)
-test_labels_segments = np.array(test_labels_segments).astype(np.float32)
-test_labels_edges = np.array(test_labels_edges).astype(np.float32)
-test_labels_centerlines = np.array(test_labels_centerlines).astype(np.float32)
+test_images = (np.array(test_images) / 255.0).reshape(-1, H, W, C)
+test_labels_segments = np.array(test_labels_segments).reshape(-1, H, W, C).astype(np.float32)
+test_labels_edges = np.array(test_labels_edges).reshape(-1, H, W, C).astype(np.float32)
+test_labels_centerlines = np.array(test_labels_centerlines).reshape(-1,H,W,C).astype(np.float32)
 

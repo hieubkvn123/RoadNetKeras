@@ -15,7 +15,7 @@ class RoadNet(object):
         self.centerline_net = SideNet(name='centerline', input_shape=input_shape)
         self.edge_net = SideNet(name='edge', input_shape=input_shape)
         self.surface_net = RoadSurfaceNet(input_shape=input_shape)
-        self.beta = 0.1 ### For balanced cross-entropy ###
+        self.beta = 0.7 ### For balanced cross-entropy ###
         self.lambda_ = 2e-4 ### For generalization ###
         
         ### For weights of the loss components ###
@@ -28,8 +28,9 @@ class RoadNet(object):
         w2 = 1 - self.beta
     
         def loss(y_true, y_pred):
-            # transform predicted map to a probability map 
-            y_pred = K.clip(y_pred, K.epsilon(), 1 - K.epsilon()) # need epsilon to avoid absolute zeros
+            # transform predicted map to a probability map
+            # y_pred = tf.nn.softmax(y_pred)
+            y_pred = K.clip(y_pred, K.epsilon(), 1 - K.epsilon()) # need epsilon to avoid absolute zeros 
             ones = tf.ones_like(y_true) # create a mask
             msk = tf.equal(y_true, ones)
 
@@ -37,9 +38,10 @@ class RoadNet(object):
             res, _ = tf.map_fn(lambda x: (tf.multiply(-tf.math.log(x[0]), w1) if x[1] is True else tf.multiply(-tf.math.log(1 - x[0]), w2), x[1]),
                                (y_pred, msk), dtype=(tf.float32, tf.bool))
 
+            # tf.print(_, output_stream=sys.stdout)
             ### L2 normalization ###
             ### l2 norm = 1/(2|X|) * ||Y- P||2
-            l2_norm = tf.nn.l2_normalize(y_pred - tf.cast(msk, dtype=tf.float32)) * (1/(y_pred.shape[1] * y_pred.shape[2]))
+            l2_norm = tf.nn.l2_normalize(y_pred - tf.cast(msk, dtype=tf.float32)) * (1/(y_pred.shape[1].value * y_pred.shape[2].value))
             
 
             return res + l2_norm
