@@ -3,7 +3,7 @@ import cv2
 import pickle
 import numpy as np
 
-NUM_TRAIN_IMG = -1 #100
+NUM_TRAIN_IMG = 1000
 DATA_DIR = 'data/'
 TRAIN_IMG_PICKLE = 'data/img.pickle'
 TRAIN_SEG_PICKLE = 'data/segments.pickle'
@@ -33,14 +33,14 @@ test_labels_centerlines = []
 def cropping_images(img, crop_size=(128,128)):
     crops = []
 
-    H, W = img.shape
+    H, W = img.shape[0], img.shape[1]
 
     ### Get the ratio to resize ###
-    ratio_h = int(H/128)
-    ratio_w = int(W/128)
+    ratio_h = int(H/crop_size[0])
+    ratio_w = int(W/crop_size[1])
 
     ### get the refined resize dimensions ###
-    resized_dimensions = (128 * ratio_w , 128 * ratio_h)
+    resized_dimensions = (crop_size[1] * ratio_w , crop_size[0] * ratio_h)
 
     ### resize the image ###
     img_resize = cv2.resize(img, resized_dimensions)
@@ -48,7 +48,7 @@ def cropping_images(img, crop_size=(128,128)):
     ### Divide the images into chunks of 128 x 128 squares ###
     for i in range(ratio_h):
         for j in range(ratio_w):
-            crop = img_resize[i*128: (i+1)*128, j*128:(j+1)*128]
+            crop = img_resize[i*crop_size[0]: (i+1)*crop_size[0], j*crop_size[1]:(j+1)*crop_size[1]]
 
             crops.append(crop)
 
@@ -66,7 +66,8 @@ if(not os.path.exists(TRAIN_IMG_PICKLE) or
         print("[INFO] Processing training image with id %d ..." % entry)
 
         print(abs_img_path)
-        img = cv2.cvtColor(cv2.imread(abs_img_path), cv2.COLOR_BGR2GRAY)
+        img = cv2.imread(abs_img_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         edge = cv2.cvtColor(cv2.imread(abs_edge_path), cv2.COLOR_BGR2GRAY)
         surface = cv2.cvtColor(cv2.imread(abs_surface_path), cv2.COLOR_BGR2GRAY)
         centerline = cv2.cvtColor(cv2.imread(abs_centerline_path), cv2.COLOR_BGR2GRAY)
@@ -122,7 +123,8 @@ if(not os.path.exists(TEST_IMG_PICKLE) or
         print("[INFO] Processing testing image with id %d ..." % entry)
 
         print(abs_img_path)
-        img = cv2.cvtColor(cv2.imread(abs_img_path), cv2.COLOR_BGR2GRAY)
+        img = cv2.imread(abs_img_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         edge = cv2.cvtColor(cv2.imread(abs_edge_path), cv2.COLOR_BGR2GRAY)
         surface = cv2.cvtColor(cv2.imread(abs_surface_path), cv2.COLOR_BGR2GRAY)
         centerline = cv2.cvtColor(cv2.imread(abs_centerline_path), cv2.COLOR_BGR2GRAY)

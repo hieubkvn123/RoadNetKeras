@@ -12,7 +12,7 @@ from data_loader import test_images, test_labels_segments, test_labels_edges, te
 from tensorflow.keras.layers import *
 from tensorflow.keras import backend as K
 from tensorflow.keras.models import Model
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, LearningRateScheduler, CSVLogger
 from argparse import ArgumentParser
 from roadnet import RoadNet
 
@@ -27,7 +27,7 @@ args = vars(parser.parse_args())
 DATA_DIR = 'data/'
 NUM_TRAIN_IMG=100
 EPOCHS = 1000
-BATCH_SIZE=32
+BATCH_SIZE=64
 PATIENCE=100
 MODEL_CHECKPOINT = 'checkpoints/model.weights.hdf5'
 
@@ -42,13 +42,6 @@ print('=============================================================')
 print('[INFO] Summary : %d cropped images,\n %d cropped surfaces,\n %d cropped edges,\n %d cropped centerlines' \
         % (train_images.shape[0], labels_segments.shape[0], labels_edges.shape[0], labels_centerlines.shape[0])) 
  
-#random_id = np.random.randint(0, train_images.shape[0])
-#cv2.imshow("Sample Input", train_images[random_id])
-#cv2.imshow("Sample Edge", labels_edges[random_id])
-#cv2.imshow("Sample Surface", labels_segments[random_id])
-#cv2.imshow("Sample Centerline", labels_centerlines[random_id])
-#cv2.waitKey(0)
-
 net = RoadNet()
 model = net.get_model()
 print(model.summary())
@@ -65,21 +58,24 @@ def lr_decay(i, lr):
         return 1e-4
     elif( i >= 40):
         return 5e-4
+    elif( i >= 10):
+        return 1e-3
     else:
         return lr 
 
 callbacks = [
     ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True),
     EarlyStopping(patience=PATIENCE, verbose=1),
-    LearningRateScheduler(lr_decay)
+    LearningRateScheduler(lr_decay),
+    CSVLogger('training.log.csv', append=True, separator=',')
 ]
 
 balanced_loss = net.weighted_binary_crossentropy()
-
+balanced_loss_with_l2 = net.weighted_binary_crossentropy_with_l2()
 losses = {
-    'surface_final_output' : balanced_loss,# net.weighted_binary_crossentropy,
-    'edge_final_output' : balanced_loss,# net.weighted_binary_crossentropy,
-    'line_final_output' : balanced_loss,# net.weighted_binary_crossentropy
+    'surface_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,
+    'edge_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,
+    'line_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy
     'surface_side_output_1' : balanced_loss, 
     'surface_side_output_2' : balanced_loss,
     'surface_side_output_3' : balanced_loss,
@@ -99,26 +95,27 @@ losses = {
 
 '''
 losses = {
-    'surface_final_output' : 'sparse_categorical_crossentropy',# net.weighted_binary_crossentropy,
-    'edge_final_output' : 'sparse_categorical_crossentropy',# net.weighted_binary_crossentropy,
-    'line_final_output' : 'sparse_categorical_crossentropy',# net.weighted_binary_crossentropy
-    'surface_side_output_1' : 'sparse_categorical_crossentropy', 
-    'surface_side_output_2' : 'sparse_categorical_crossentropy',
-    'surface_side_output_3' : 'sparse_categorical_crossentropy',
-    'surface_side_output_4' : 'sparse_categorical_crossentropy',
-    'surface_side_output_5' : 'sparse_categorical_crossentropy',
+    'surface_final_output' : 'binary_crossentropy',# net.weighted_binary_crossentropy,
+    'edge_final_output' : 'binary_crossentropy',# net.weighted_binary_crossentropy,
+    'line_final_output' : 'binary_crossentropy',# net.weighted_binary_crossentropy
+    'surface_side_output_1' : 'binary_crossentropy', 
+    'surface_side_output_2' : 'binary_crossentropy',
+    'surface_side_output_3' : 'binary_crossentropy',
+    'surface_side_output_4' : 'binary_crossentropy',
+    'surface_side_output_5' : 'binary_crossentropy',
 
-    'edge_side_output_1' : 'sparse_categorical_crossentropy', 
-    'edge_side_output_2' : 'sparse_categorical_crossentropy',
-    'edge_side_output_3' : 'sparse_categorical_crossentropy',
-    'edge_side_output_4' : 'sparse_categorical_crossentropy',
+    'edge_side_output_1' : 'binary_crossentropy', 
+    'edge_side_output_2' : 'binary_crossentropy',
+    'edge_side_output_3' : 'binary_crossentropy',
+    'edge_side_output_4' : 'binary_crossentropy',
 
-    'line_side_output_1' : 'sparse_categorical_crossentropy', 
-    'line_side_output_2' : 'sparse_categorical_crossentropy',
-    'line_side_output_3' : 'sparse_categorical_crossentropy',
-    'line_side_output_4' : 'sparse_categorical_crossentropy'
+    'line_side_output_1' : 'binary_crossentropy', 
+    'line_side_output_2' : 'binary_crossentropy',
+    'line_side_output_3' : 'binary_crossentropy',
+    'line_side_output_4' : 'binary_crossentropy'
 }
 '''
+
 loss_weights = {
     'surface_final_output' : 1,
     'edge_final_output' : 1,
@@ -185,18 +182,8 @@ y_test = {
      'line_side_output_4' : test_labels_centerlines 
 }
 
-adam = tf.keras.optimizers.Adam(lr=1e-4, beta_1=0.9,beta_2=0.999,amsgrad=True)
-model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights)
-history = model.fit(train_images, y=y, validation_data=(test_images, y_test), epochs=EPOCHS, batch_size=BATCH_SIZE, callbacks=callbacks)
+adam = tf.keras.optimizers.SGD(lr=1e-3, momentum=0.9)
+mean_iou = tf.keras.metrics.MeanIoU(num_classes=2)
+model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights, metrics=[mean_iou])
+history = model.fit(train_images, y=y, validation_data=(test_images, y_test), epochs=EPOCHS, callbacks=callbacks)
 
-data_frame = pd.DataFrame()
-data_frame['total_loss'] = history.history['loss']
-data_frame['val_total_loss'] = history.history['val_loss']
-data_frame['surface_final_output_loss'] = history.history['surface_final_output_loss']
-data_frame['val_surface_final_output_loss'] = history.history['val_surface_final_output_loss']
-data_frame['edge_final_output_loss'] = history.history['edge_final_output_loss']
-data_frame['val_edge_final_output_loss'] = history.history['val_edge_final_output_loss']
-data_frame['line_final_output_loss'] = history.history['line_final_output_loss']
-data_frame['val_line_final_output_loss'] = history.history['val_line_final_output_loss']
-
-data_frame.to_csv('training_summary.csv')
