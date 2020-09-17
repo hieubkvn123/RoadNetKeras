@@ -27,7 +27,7 @@ args = vars(parser.parse_args())
 DATA_DIR = 'data/'
 NUM_TRAIN_IMG=100
 EPOCHS = 1000
-BATCH_SIZE=64
+BATCH_SIZE=32
 PATIENCE=100
 MODEL_CHECKPOINT = 'checkpoints/model.weights.hdf5'
 
@@ -185,5 +185,5 @@ y_test = {
 adam = tf.keras.optimizers.SGD(lr=1e-3, momentum=0.9)
 mean_iou = tf.keras.metrics.MeanIoU(num_classes=2)
 model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights, metrics=[mean_iou])
-history = model.fit(train_images, y=y, validation_data=(test_images, y_test), epochs=EPOCHS, callbacks=callbacks)
+history = model.fit(train_images, y=y, validation_data=(test_images, y_test), epochs=EPOCHS, callbacks=callbacks, batch_size=BATCH_SIZE)
 

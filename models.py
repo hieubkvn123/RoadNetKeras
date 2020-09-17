@@ -7,7 +7,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 
 class RoadSurfaceNet(object):
-    def __init__(self, input_shape=(512,512,1), name='surface'):
+    def __init__(self, input_shape=(512,512,3), name='surface'):
         self.input_shape=input_shape
         self.name=name
         
@@ -31,7 +31,8 @@ class RoadSurfaceNet(object):
 
         ### First output ###
         ### Size = W * H * 1 ###
-        side_1 = Conv2D(1, kernel_size=(1,1), activation='sigmoid', padding='same', name='surface_output_1')(conv_1)
+        side_1 = Conv2D(2, kernel_size=(1,1), activation='sigmoid', padding='same', name='surface_output_1')(conv_1)
+        side_1 = tf.keras.activations.relu(side_1)
 
         ### Stage 2 ###
         conv_2 = Conv2D(128, kernel_size=(3,3), activation='selu', padding='same')(pool_1)
@@ -40,8 +41,9 @@ class RoadSurfaceNet(object):
 
         ### Second output ###
         ### Size = W/2 * H/2 * 1 ###
-        side_2 = Conv2D(1, kernel_size=(1,1), activation='sigmoid')(conv_2)
-        side_2 = Conv2DTranspose(1, kernel_size=(2,2), strides=(2,2), padding='same', name='surface_output_2')(side_2)
+        side_2 = Conv2D(2, kernel_size=(1,1), activation='sigmoid')(conv_2)
+        side_2 = Conv2DTranspose(2, kernel_size=(2,2),activation='sigmoid', strides=(2,2), padding='same', name='surface_output_2')(side_2)
+        side_2 = tf.keras.activations.relu(side_2)
 
         ### Stage 3 ###
         conv_3 = Conv2D(256, kernel_size=(3,3), activation='selu', padding='same')(pool_2)
@@ -51,8 +53,9 @@ class RoadSurfaceNet(object):
 
         ### Third output ###
         ### Size = W/4 * H/4 * 1 ###
-        side_3 = Conv2D(1, kernel_size=(1,1), activation='sigmoid')(conv_3)
-        side_3 = Conv2DTranspose(1, kernel_size=(4,4), strides=(4,4), padding='same', name='surface_output_3')(side_3)
+        side_3 = Conv2D(2, kernel_size=(1,1), activation='sigmoid')(conv_3)
+        side_3 = Conv2DTranspose(2, kernel_size=(4,4),activation='sigmoid', strides=(4,4), padding='same', name='surface_output_3')(side_3)
+        side_3 = tf.keras.activations.relu(side_3)
 
         ### Stage 4 ###
         conv_4 = Conv2D(512, kernel_size=(3,3), activation='selu', padding='same')(pool_3)
@@ -62,8 +65,9 @@ class RoadSurfaceNet(object):
 
         ### Fourth output ###
         ### Size = W/8 * H/8 * 1 ###
-        side_4 = Conv2D(1, kernel_size=(1,1), activation='sigmoid')(conv_4)
-        side_4 = Conv2DTranspose(1, kernel_size=(8,8), strides=(8,8), padding='same', name='surface_output_4')(side_4)
+        side_4 = Conv2D(2, kernel_size=(1,1), activation='sigmoid')(conv_4)
+        side_4 = Conv2DTranspose(2, kernel_size=(8,8),activation='sigmoid', strides=(8,8), padding='same', name='surface_output_4')(side_4)
+        side_4 = tf.keras.activations.relu(side_4)
 
         ### Stage 5 ###
         conv_5 = Conv2D(512, kernel_size=(3,3), activation='selu', padding='same')(pool_4) 
@@ -72,13 +76,15 @@ class RoadSurfaceNet(object):
 
         ### Fifth output ###
         ### Size = W/16 * H/16 * 1 ###
-        side_5 = Conv2D(1, kernel_size=(1,1), activation='sigmoid')(conv_5)
-        side_5 = Conv2DTranspose(1, kernel_size=(16,16), strides=(16,16), padding='same', name='surface_output_5')(side_5)
+        side_5 = Conv2D(2, kernel_size=(1,1), activation='sigmoid')(conv_5)
+        side_5 = Conv2DTranspose(2, kernel_size=(16,16),activation='sigmoid', strides=(16,16), padding='same', name='surface_output_5')(side_5)
+        side_5 = tf.keras.activations.relu(side_5)
 
         ### concatenated output ###
         concat = Concatenate(axis=3)([side_1, side_2, side_3, side_4, side_5])
         # concat = tf.keras.layers.concatenate((side_1, side_2, side_3, side_4, side_5), axis=3)
-        concat = Conv2D(1, kernel_size=(1,1), activation='sigmoid', name='surface_concat', kernel_regularizer=l2(1e-4))(concat)
+        concat = Conv2D(2, kernel_size=(1,1), activation='sigmoid', name='surface_concat', kernel_regularizer=l2(1e-4))(concat)
+        concat = tf.keras.activations.relu(concat)
 
         ### We need to pass the original inputs and the final concat to centerline and edge networks ###
         model = Model(inputs=inputs, outputs=[side_1,side_2,side_3,side_4,side_5,concat],name=self.name)
@@ -86,7 +92,7 @@ class RoadSurfaceNet(object):
         return model
 
 class SideNet(object):
-    def __init__(self, input_shape=(512,512,1), name='centerline_net'):
+    def __init__(self, input_shape=(512,512,2), name='centerline_net'):
         self.input_shape=input_shape
         self.name = name
 
@@ -104,7 +110,7 @@ class SideNet(object):
 
     def get_model(self):
         ### Original Image ###
-        input_1 = Input(shape=self.input_shape)
+        input_1 = Input(shape=(512,512,3))
         ### The segmented map ###
         input_2 = Input(shape=self.input_shape)
         
@@ -117,34 +123,39 @@ class SideNet(object):
         pool_1 = MaxPooling2D(pool_size=(2,2))(conv_1)
 
         ### First output ###
-        side_1 = Conv2D(1, kernel_size=(1,1), activation='sigmoid', name=self.name+'_output_1')(conv_1)
+        side_1 = Conv2D(2, kernel_size=(1,1), activation='sigmoid', name=self.name+'_output_1')(conv_1)
+        side_1 = tf.keras.activations.relu(side_1)
 
         conv_2 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(pool_1)
         conv_2 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(conv_2)
         pool_2 = MaxPooling2D(pool_size=(2,2))(conv_2)
 
         ### Second output ###
-        side_2 = Conv2D(1, kernel_size=(1,1), activation='sigmoid')(conv_2)
-        side_2 = Conv2DTranspose(1, kernel_size=(2,2), strides=(2,2), padding='same', name=self.name+'_output_2')(side_2)
+        side_2 = Conv2D(2, kernel_size=(1,1), activation='sigmoid')(conv_2)
+        side_2 = Conv2DTranspose(2, kernel_size=(2,2), activation='sigmoid', strides=(2,2), padding='same', name=self.name+'_output_2')(side_2)
+        side_2 = tf.keras.activations.relu(side_2)
 
         conv_3 = Conv2D(128, kernel_size=(3,3), activation='selu', padding='same')(pool_2)
         conv_3 = Conv2D(128, kernel_size=(3,3), activation='selu', padding='same')(conv_3)
         pool_3 = MaxPooling2D(pool_size=(2,2))(conv_3)
 
         ### Third output ###
-        side_3 = Conv2D(1, kernel_size=(1,1), activation='sigmoid')(conv_3)
-        side_3 = Conv2DTranspose(1, kernel_size=(4,4), strides=(4,4), padding='same', name=self.name+'_output_3')(side_3)
+        side_3 = Conv2D(2, kernel_size=(1,1), activation='sigmoid')(conv_3)
+        side_3 = Conv2DTranspose(2, kernel_size=(4,4), activation='sigmoid', strides=(4,4), padding='same', name=self.name+'_output_3')(side_3)
+        side_3 = tf.keras.activations.relu(side_3)
 
         conv_4 = Conv2D(256, kernel_size=(3,3), activation='selu', padding='same')(pool_3)
         conv_4 = Conv2D(256, kernel_size=(3,3), activation='selu', padding='same')(conv_4)
 
         ### Fourth output ###
-        side_4 = Conv2D(1, kernel_size=(1,1), activation='sigmoid')(conv_4)
-        side_4 = Conv2DTranspose(1, kernel_size=(8,8), strides=(8,8), padding='same', name=self.name+'_output_4')(side_4)
-        
+        side_4 = Conv2D(2, kernel_size=(1,1), activation='sigmoid')(conv_4)
+        side_4 = Conv2DTranspose(2, kernel_size=(8,8), activation='sigmoid', strides=(8,8), padding='same', name=self.name+'_output_4')(side_4)
+        side_4 = tf.keras.activations.relu(side_4)
+
         concat = Concatenate(axis=3)([side_1, side_2, side_3, side_4])
         # concat = tf.keras.layers.concatenate((side_1, side_2, side_3, side_4), axis=3)
-        concat = Conv2D(1, kernel_size=(1,1), activation='sigmoid', name=self.name+'_concat', kernel_regularizer=l2(1e-4))(concat) 
+        concat = Conv2D(2, kernel_size=(1,1), activation='sigmoid', name=self.name+'_concat', kernel_regularizer=l2(1e-4))(concat) 
+        concat = tf.keras.activations.relu(concat)
 
         model = Model(inputs=[input_1, input_2], outputs=[side_1, side_2, side_3, side_4, concat], name=self.name)
 

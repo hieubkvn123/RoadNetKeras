@@ -7,14 +7,15 @@ from models import SideNet
 from models import RoadSurfaceNet
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
+from tensorflow.keras.regularizers import l2
 from tensorflow.keras import backend as K
 
 class RoadNet(object):
-    def __init__(self, input_shape=(128,128,1)):
+    def __init__(self, input_shape=(512,512,3)):
         self.input_shape=input_shape
-        self.centerline_net = SideNet(name='centerline', input_shape=input_shape)
-        self.edge_net = SideNet(name='edge', input_shape=input_shape)
-        self.surface_net = RoadSurfaceNet(input_shape=input_shape)
+        self.centerline_net = SideNet(name='centerline')
+        self.edge_net = SideNet(name='edge')
+        self.surface_net = RoadSurfaceNet()
         self.beta = 0.99 ### For balanced cross-entropy ###
         self.lambda_ = 2e-4 ### For generalization ###
         
@@ -26,64 +27,44 @@ class RoadNet(object):
     def weighted_binary_crossentropy(self): 
         def loss(y_true, y_pred):
             # transform predicted map to a probability map
-            # y_pred = tf.nn.softmax(y_pred)
-            ones = tf.ones_like(y_true)
-            msk = tf.equal(ones, y_true)
-
-            count_neg = tf.reduce_sum(1 - y_true)
-            count_pos = tf.reduce_sum(y_true)
+            # y_pred = tf.nn.sigmoid(y_pred)
+            count_neg = tf.math.reduce_sum(1 - y_true)
+            count_pos = tf.math.reduce_sum(y_true)
             beta = count_neg / (count_neg + count_pos)
             pos_weight = beta / (1 - beta)
             
-            w1 = beta 
-            w2 = 1 - beta
-
-            '''
-            y_pred = K.clip(y_pred, K.epsilon(), 1 - K.epsilon()) # need epsilon to avoid absolute zeros 
-            ones = tf.ones_like(y_true) # create a mask
-            msk = tf.equal(y_true, ones)
             ### Calculate weighted binary cross-entropy loss with beta=0.1 to signify the importance of loss where y==1 ###
-            res, _ = tf.map_fn(lambda x: (tf.multiply(-tf.math.log(x[0]), w1) if x[1] is True else tf.multiply(-tf.math.log(1 - x[0]), w2), x[1]),
-                               (y_pred, msk), dtype=(tf.float32, tf.bool))
-            '''
-            loss = tf.nn.weighted_cross_entropy_with_logits(y_true, y_pred, pos_weight)
+            '''res, _ = tf.map_fn(lambda x: (tf.multiply(-tf.math.log(x[0]), w1) if x[1] is True else tf.multiply(-tf.math.log(1 - x[0]), w2), x[1]),
+                               (y_pred, msk), dtype=(tf.float32, tf.bool)) '''
+
+            res = tf.nn.weighted_cross_entropy_with_logits(y_true, y_pred, pos_weight)
             ### L2 normalization ###
             ### l2 norm = 1/(2|X|) * ||Y- P||2
             # l2_norm = tf.reduce_mean((tf.sigmoid(y_pred) - y_true)**2) * 0.5
     
-            return loss # + l2_norm
+            return res # + l2_norm
 
         return loss
     
     def weighted_binary_crossentropy_with_l2(self): 
         def loss(y_true, y_pred):
             # transform predicted map to a probability map
-            # y_pred = tf.nn.softmax(y_pred)
-            ones = tf.ones_like(y_true)
-            msk = tf.equal(ones, y_true)
-
-            count_neg = tf.reduce_sum(1 - y_true)
-            count_pos = tf.reduce_sum(y_true)
+            # y_pred = tf.nn.sigmoid(y_pred)
+            count_neg = tf.math.reduce_sum(1 - y_true)
+            count_pos = tf.math.reduce_sum(y_true)
             beta = count_neg / (count_neg + count_pos)
-            w1 = beta 
-            w2 = 1 - beta
             pos_weight = beta / (1 - beta)
-
-            '''
-            y_pred = K.clip(y_pred, K.epsilon(), 1 - K.epsilon()) # need epsilon to avoid absolute zeros 
-            ones = tf.ones_like(y_true) # create a mask
-            msk = tf.equal(y_true, ones)
     
             ### Calculate weighted binary cross-entropy loss with beta=0.1 to signify the importance of loss where y==1 ###
-            res, _ = tf.map_fn(lambda x: (tf.multiply(-tf.math.log(x[0]), w1) if x[1] is True else tf.multiply(-tf.math.log(1 - x[0]), w2), x[1]),
-                               (y_pred, msk), dtype=(tf.float32, tf.bool))
-            '''
-            loss = tf.nn.weighted_cross_entropy_with_logits(y_true, y_pred, pos_weight)
+            '''res, _ = tf.map_fn(lambda x: (tf.multiply(-tf.math.log(x[0]), w1) if x[1] is True else tf.multiply(-tf.math.log(1 - x[0]), w2), x[1]),
+                               (y_pred, msk), dtype=(tf.float32, tf.bool))'''
+
+            res = tf.nn.weighted_cross_entropy_with_logits(y_true, y_pred, pos_weight)
             ### L2 normalization ###
             ### l2 norm = 1/(2|X|) * ||Y- P||2
-            l2_norm = tf.reduce_mean((tf.sigmoid(y_pred) - y_true)**2) * 0.5
+            l2_norm = tf.reduce_mean((tf.math.sigmoid(y_pred) - y_true) ** 2) * 0.5
 
-            return loss + l2_norm
+            return res + l2_norm
 
         return loss
 
@@ -119,4 +100,5 @@ class RoadNet(object):
                 s1_line, s2_line, s3_line, s4_line])
 
         return model
+
 
