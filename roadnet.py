@@ -26,6 +26,7 @@ class RoadNet(object):
 
     def weighted_binary_crossentropy(self): 
         def loss(y_true, y_pred):
+            y_pred = tf.math.sigmoid(y_pred)
             # transform predicted map to a probability map
             # y_pred = tf.nn.sigmoid(y_pred)
             count_neg = tf.math.reduce_sum(1 - y_true)
