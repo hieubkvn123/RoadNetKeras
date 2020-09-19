@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import tensorflow as tf
 
-NUM_TRAIN_IMG = 1000
+NUM_TRAIN_IMG = 100 
 DATA_DIR = 'data/'
 TRAIN_IMG_PICKLE = 'data/img.pickle'
 TRAIN_SEG_PICKLE = 'data/segments.pickle'
@@ -18,7 +18,7 @@ TEST_CEN_PICKLE = 'data/test_centerlines.pickle'
 
 TRAIN_SET = [2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 TEST_SET  = [1,16,17,18,19,20]
-H, W, C, C_ = 512, 512, 3, 1
+H, W, C, C_ = 128, 128, 3, 1
 
 train_images = []
 test_images  = []
@@ -31,7 +31,7 @@ test_labels_segments = []
 test_labels_edges = []
 test_labels_centerlines = []
 
-def cropping_images(img, crop_size=(512,512)):
+def cropping_images(img, crop_size=(128,128)):
     crops = []
 
     H, W = img.shape[0], img.shape[1]

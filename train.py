@@ -28,7 +28,7 @@ DATA_DIR = 'data/'
 NUM_TRAIN_IMG=100
 EPOCHS = 1000
 BATCH_SIZE=32
-PATIENCE=100
+PATIENCE=15
 MODEL_CHECKPOINT = 'checkpoints/model.weights.hdf5'
 
 if(args['dir']): DATA_DIR=args['dir']
@@ -66,12 +66,11 @@ def lr_decay(i, lr):
 callbacks = [
     ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True),
     EarlyStopping(patience=PATIENCE, verbose=1),
-    LearningRateScheduler(lr_decay),
-    CSVLogger('training.log.csv', append=True, separator=',')
 ]
 
-balanced_loss = net.weighted_binary_crossentropy()
+balanced_loss = net.cross_entropy_balanced
 balanced_loss_with_l2 = net.weighted_binary_crossentropy_with_l2()
+'''
 losses = {
     'surface_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,
     'edge_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,
@@ -114,7 +113,6 @@ losses = {
     'line_side_output_3' : 'binary_crossentropy',
     'line_side_output_4' : 'binary_crossentropy'
 }
-'''
 
 loss_weights = {
     'surface_final_output' : 1,
@@ -183,7 +181,10 @@ y_test = {
 }
 
 adam = tf.keras.optimizers.SGD(lr=1e-3, momentum=0.9)
-mean_iou = tf.keras.metrics.MeanIoU(num_classes=2)
+class MyMeanIOU(tf.keras.metrics.MeanIoU):
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        return super().update_state(tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight)
+mean_iou = MyMeanIOU(num_classes=2)
 model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights, metrics=[mean_iou])
-history = model.fit(train_images, y=y, validation_data=(test_images, y_test), epochs=EPOCHS, callbacks=callbacks, batch_size=BATCH_SIZE)
+history = model.fit(train_images, y=y, validation_split=0.3, epochs=EPOCHS, callbacks=callbacks, batch_size=BATCH_SIZE)
 

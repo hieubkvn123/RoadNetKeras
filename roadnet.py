@@ -11,7 +11,7 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras import backend as K
 
 class RoadNet(object):
-    def __init__(self, input_shape=(512,512,3)):
+    def __init__(self, input_shape=(128,128,3)):
         self.input_shape=input_shape
         self.centerline_net = SideNet(name='centerline')
         self.edge_net = SideNet(name='edge')
@@ -23,6 +23,28 @@ class RoadNet(object):
         self.alpha = 1.0 # for balanced cross-entropy
         self.gamma = 1.0 # for regularization 
         self.eta   = 1.0 # for generalization
+
+    def cross_entropy_balanced(self, y_true, y_pred):
+        _epsilon = tf.convert_to_tensor(K.epsilon(), y_pred.dtype.base_dtype)
+        y_pred = tf.clip_by_value(y_pred, _epsilon, 1 - _epsilon)
+        # y_pred = tf.math.log(y_pred/(1-y_pred))
+        y_pred = (tf.nn.sigmoid(y_pred) - 0.5)/0.5
+
+        y_true = tf.cast(y_true, tf.float32)
+
+        count_neg = tf.reduce_sum(1. - y_true)
+        count_pos = tf.reduce_sum(y_true)
+
+        ### Calc beta ###
+        beta = count_neg/(count_neg+count_pos)
+
+        ### Calc pos_weight ###
+        pos_weight = beta / (1-beta)
+
+        cost = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, labels=y_true, pos_weight=pos_weight)
+        # cost = tf.reduce_mean(cost * (1 - beta))
+
+        return cost 
 
     def weighted_binary_crossentropy(self): 
         def loss(y_true, y_pred):
@@ -49,21 +71,18 @@ class RoadNet(object):
     
     def weighted_binary_crossentropy_with_l2(self): 
         def loss(y_true, y_pred):
-            # transform predicted map to a probability map
-            # y_pred = tf.nn.sigmoid(y_pred)
-            count_neg = tf.math.reduce_sum(1 - y_true)
-            count_pos = tf.math.reduce_sum(y_true)
-            beta = count_neg / (count_neg + count_pos)
-            pos_weight = beta / (1 - beta)
-    
-            ### Calculate weighted binary cross-entropy loss with beta=0.1 to signify the importance of loss where y==1 ###
-            '''res, _ = tf.map_fn(lambda x: (tf.multiply(-tf.math.log(x[0]), w1) if x[1] is True else tf.multiply(-tf.math.log(1 - x[0]), w2), x[1]),
-                               (y_pred, msk), dtype=(tf.float32, tf.bool))'''
+            res = self.cross_entropy_balanced(y_true, y_pred)
 
-            res = tf.nn.weighted_cross_entropy_with_logits(y_true, y_pred, pos_weight)
             ### L2 normalization ###
             ### l2 norm = 1/(2|X|) * ||Y- P||2
-            l2_norm = tf.reduce_mean((tf.math.sigmoid(y_pred) - y_true) ** 2) * 0.5
+            
+            _epsilon = tf.convert_to_tensor(K.epsilon(), y_pred.dtype.base_dtype)
+            y_pred = tf.clip_by_value(y_pred, _epsilon, 1 - _epsilon)
+            y_pred = tf.math.log(y_pred/(1-y_pred))
+
+            y_true = tf.cast(y_true, dtype=tf.float32)
+
+            l2_norm = tf.reduce_mean((y_pred - y_true) ** 2) * 0.5
 
             return res + l2_norm
 
