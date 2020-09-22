@@ -66,6 +66,7 @@ def lr_decay(i, lr):
 callbacks = [
     ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True),
     EarlyStopping(patience=PATIENCE, verbose=1),
+    CSVLogger('training.log.csv', append=True)
 ]
 
 balanced_loss = net.cross_entropy_balanced
