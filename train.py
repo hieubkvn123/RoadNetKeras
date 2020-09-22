@@ -29,7 +29,7 @@ NUM_TRAIN_IMG=100
 EPOCHS = 1000
 BATCH_SIZE=32
 PATIENCE=15
-MODEL_CHECKPOINT = 'checkpoints/model.weights.hdf5'
+MODEL_CHECKPOINT = 'checkpoints/model_1.weights.hdf5'
 
 if(args['dir']): DATA_DIR=args['dir']
 if(args['n_train']): NUM_TRAIN_IMG=args['n_train']
@@ -69,9 +69,9 @@ callbacks = [
     CSVLogger('training.log.csv', append=True)
 ]
 
-balanced_loss = net.cross_entropy_balanced
+balanced_loss = net.weighted_binary_crossentropy()
 balanced_loss_with_l2 = net.weighted_binary_crossentropy_with_l2()
-'''
+
 losses = {
     'surface_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,
     'edge_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,
@@ -114,6 +114,7 @@ losses = {
     'line_side_output_3' : 'binary_crossentropy',
     'line_side_output_4' : 'binary_crossentropy'
 }
+'''
 
 loss_weights = {
     'surface_final_output' : 1,
