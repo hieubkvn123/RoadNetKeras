@@ -1,0 +1,7 @@
+Change 1 :
+ - Location : 74 - 77 file roadnet.py
+ - Description : Modified the balanced crossentropy. Instead of 
+ 	using tf.nn.weighted_cross_entropy_with_logits, we use K.binary_crossentropy
+	-> it turns out minimizing the effect of negative class loss is important
+
+ - checkpoint file : model_1.weights.hdf5
