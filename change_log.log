@@ -4,4 +4,7 @@ Change 1 :
  	using tf.nn.weighted_cross_entropy_with_logits, we use K.binary_crossentropy
 	-> it turns out minimizing the effect of negative class loss is important
 
+ - Effect : Now predicted map is less biased and started to predict both
+ 	negative and positive classes 
+
  - checkpoint file : model_1.weights.hdf5
