@@ -29,7 +29,7 @@ NUM_TRAIN_IMG=100
 EPOCHS = 1000
 BATCH_SIZE=32
 PATIENCE=15
-MODEL_CHECKPOINT = 'checkpoints/model_1.weights.hdf5'
+MODEL_CHECKPOINT = 'checkpoints/model_2.weights.hdf5'
 
 ### Create checkpoints directory if not exists ###
 if(not os.path.exists('checkpoints')):
@@ -70,7 +70,7 @@ def lr_decay(i, lr):
 callbacks = [
     ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True),
     EarlyStopping(patience=PATIENCE, verbose=1),
-    CSVLogger('training.log.csv', append=True)
+    CSVLogger('training_2.log.csv', append=True)
 ]
 
 balanced_loss = net.weighted_binary_crossentropy()

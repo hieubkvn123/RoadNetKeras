@@ -41,7 +41,7 @@ class RoadSurfaceNet(object):
         ### Second output ###
         ### Size = W/2 * H/2 * 1 ###
         side_2 = Conv2D(2, kernel_size=(1,1), activation='selu')(conv_2)
-        side_2 = Conv2DTranspose(2, kernel_size=(2,2), strides=(2,2), padding='same', activation='sigmoid')(side_2)
+        side_2 = UpsSampling2D(size=(2,2), interpolation='bilinear')(side_2)
 
         ### Stage 3 ###
         conv_3 = Conv2D(32, kernel_size=(3,3), activation='selu', padding='same')(pool_2)
@@ -52,7 +52,7 @@ class RoadSurfaceNet(object):
         ### Third output ###
         ### Size = W/4 * H/4 * 1 ###
         side_3 = Conv2D(2, kernel_size=(1,1), activation='selu')(conv_3)
-        side_3 = Conv2DTranspose(2, kernel_size=(4,4), strides=(4,4), padding='same', activation='sigmoid')(side_3)
+        side_3 = UpSampling2D(size=(4,4), interpolation='bilinear')(side_3)
 
         ### Stage 4 ###
         conv_4 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(pool_3)
@@ -63,7 +63,7 @@ class RoadSurfaceNet(object):
         ### Fourth output ###
         ### Size = W/8 * H/8 * 1 ###
         side_4 = Conv2D(2, kernel_size=(1,1), activation='selu')(conv_4)
-        side_4 = Conv2DTranspose(2, kernel_size=(8,8), strides=(8,8), padding='same', activation='sigmoid')(side_4)
+        side_4 = UpSampling2D(size=(8,8), interpolation='bilinear')(side_4)
 
         ### Stage 5 ###
         conv_5 = Conv2D(128, kernel_size=(3,3), activation='selu', padding='same')(pool_4) 
@@ -73,7 +73,7 @@ class RoadSurfaceNet(object):
         ### Fifth output ###
         ### Size = W/16 * H/16 * 1 ###
         side_5 = Conv2D(2, kernel_size=(1,1), activation='sigmoid')(conv_5)
-        side_5 = Conv2DTranspose(2, kernel_size=(16,16), strides=(16,16), padding='same', activation='sigmoid')(side_5)
+        side_5 = UpSampling2D(size=(16,16), interpolation='bilinear')(side_5)
 
         ### concatenated output ###
         concat = Concatenate(axis=3)([side_1, side_2, side_3, side_4, side_5])
@@ -125,7 +125,7 @@ class SideNet(object):
 
         ### Second output ###
         side_2 = Conv2D(2, kernel_size=(1,1), activation='selu')(conv_2)
-        side_2 = Conv2DTranspose(2, kernel_size=(2,2), strides=(2,2), activation='sigmoid', padding='same')(side_2)
+        side_2 = UpSampling2D(size=(2,2), interpolation='bilinear')(side_2)
 
         conv_3 = Conv2D(32, kernel_size=(3,3), activation='selu', padding='same')(pool_2)
         conv_3 = Conv2D(32, kernel_size=(3,3), activation='selu', padding='same')(conv_3)
@@ -133,14 +133,14 @@ class SideNet(object):
 
         ### Third output ###
         side_3 = Conv2D(2, kernel_size=(1,1), activation='selu')(conv_3)
-        side_3 = Conv2DTranspose(2, kernel_size=(4,4), strides=(4,4), activation='sigmoid', padding='same')(side_3)
+        side_3 = UpSampling2D(size=(4,4), interpolation='bilinear')(side_3)
 
         conv_4 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(pool_3)
         conv_4 = Conv2D(64, kernel_size=(3,3), activation='selu', padding='same')(conv_4)
 
         ### Fourth output ###
         side_4 = Conv2D(2, kernel_size=(1,1), activation='selu')(conv_4)
-        side_4 = Conv2DTranspose(2, kernel_size=(8,8), strides=(8,8), activation='sigmoid', padding='same')(side_4)
+        side_4 = UpSampling2D(size=(8,8), interpolation='bilinear')(side_4)
 
         concat = Concatenate(axis=3)([side_1, side_2, side_3, side_4])
         # concat = tf.keras.layers.concatenate((side_1, side_2, side_3, side_4), axis=3)
