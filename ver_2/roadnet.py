@@ -74,7 +74,12 @@ class RoadNet(object):
             b_ce = K.binary_crossentropy(y_true, y_pred)
             weight_vector = y_true * beta + (1. - y_true) * (1-beta)
             weighted_b_ce = weight_vector * b_ce
-            res = K.mean(weighted_b_ce)
+
+            loss_pos = weighted_b_ce * y_true
+            loss_neg = weighted_b_ce * (1 - y_true)
+
+            # res = K.mean(weighted_b_ce)
+            res = K.mean(loss_pos) + K.mean(loss_neg)
 
             # res = tf.nn.weighted_cross_entropy_with_logits(y_true, y_pred, pos_weight)
             ### L2 normalization ###
