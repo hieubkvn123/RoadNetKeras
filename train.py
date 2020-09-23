@@ -31,6 +31,10 @@ BATCH_SIZE=32
 PATIENCE=15
 MODEL_CHECKPOINT = 'checkpoints/model_1.weights.hdf5'
 
+### Create checkpoints directory if not exists ###
+if(not os.path.exists('checkpoints')):
+    os.mkdir('checkpoints')
+
 if(args['dir']): DATA_DIR=args['dir']
 if(args['n_train']): NUM_TRAIN_IMG=args['n_train']
 if(not args['n_train']): NUM_TRAIN_IMG=train_images.shape[0]
