@@ -23,6 +23,7 @@ columns = [
 ]
 
 data_frame = data_frame[columns]
+data_frame['epoch'] = list(range(len(data_frame['epoch'])))
 
 fig1, ax1 = plt.subplots(2,2, figsize=(15,15))
 fig2, ax2 = plt.subplots(3,1, figsize=(10, 20))
