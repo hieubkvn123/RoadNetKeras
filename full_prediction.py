@@ -14,11 +14,10 @@ parser.add_argument('-i', '--image', required=False, help='Path to the testing i
 args = vars(parser.parse_args())
 
 MODEL_CHECKPOINT = 'checkpoints/model_1.weights.hdf5'
-TEST_IMG = 'data/1/Ottawa-1.tif'
-TEST_LBL = 'data/' + TEST_IMG.split('/')[1] + "/segmentation.png"
-
 if(args['model']) : MODEL_CHECKPOINT = args['model']
 if(args['image']) : TEST_IMG = args['image']
+
+TEST_LBL = 'data/' + TEST_IMG.split('/')[1] + "/segmentation.png"
 
 original = cv2.imread(TEST_IMG)
 gt_segment = cv2.imread(TEST_LBL)
@@ -86,8 +85,7 @@ print("Writing Image to " + save_file_name)
 
 cv2.imwrite(save_file_name, full_image)
 
-fig, ax = plt.subplots(1,3, figsize=(30, 10))
-ax[0].imshow(original)
-ax[1].imshow(gt_segment)
-ax[2].imshow(full_image)
+fig, ax = plt.subplots(1,2, figsize=(30, 15))
+ax[0].imshow(gt_segment)
+ax[1].imshow(full_image)
 plt.show()
