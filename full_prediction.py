@@ -14,6 +14,8 @@ parser.add_argument('-i', '--image', required=False, help='Path to the testing i
 args = vars(parser.parse_args())
 
 MODEL_CHECKPOINT = 'checkpoints/model_1.weights.hdf5'
+TEST_IMG = 'data/1/Ottawa-1.tif'
+
 if(args['model']) : MODEL_CHECKPOINT = args['model']
 if(args['image']) : TEST_IMG = args['image']
 
