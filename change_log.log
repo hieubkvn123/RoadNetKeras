@@ -8,3 +8,11 @@ Change 1 :
  	negative and positive classes 
 
  - checkpoint file : model_1.weights.hdf5
+
+ Change 2 :
+  - Location : /ver_2
+	- Description : Added a workspace to test out the second formula
+	- Effect : it is converging like the original formula but slower and 
+		fewer layers are optimized
+	
+	- checkpoint file : ver_2/checkpoints/model_1.weights.hdf5
