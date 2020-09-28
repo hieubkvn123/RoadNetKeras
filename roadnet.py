@@ -95,9 +95,8 @@ class RoadNet(object):
             
             _epsilon = tf.convert_to_tensor(K.epsilon(), y_pred.dtype.base_dtype)
             y_pred = tf.clip_by_value(y_pred, _epsilon, 1 - _epsilon)
-
-            ### Covnert to logits ###
             y_pred = tf.math.log(y_pred/(1-y_pred))
+
             y_true = tf.cast(y_true, dtype=tf.float32)
 
             l2_norm = tf.reduce_mean((y_pred - y_true) ** 2) * 0.5

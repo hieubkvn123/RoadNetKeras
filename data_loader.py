@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import tensorflow as tf
 
-NUM_TRAIN_IMG = 100 
+NUM_TRAIN_IMG = 1000 
 DATA_DIR = 'data/'
 TRAIN_IMG_PICKLE = 'data/img.pickle'
 TRAIN_SEG_PICKLE = 'data/segments.pickle'
