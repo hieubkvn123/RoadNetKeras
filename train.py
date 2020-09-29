@@ -76,6 +76,7 @@ callbacks = [
 
 balanced_loss = net.weighted_binary_crossentropy()
 balanced_loss_with_l2 = net.weighted_binary_crossentropy_with_l2()
+weighted_ce_with_logits = net.cross_entropy_balanced
 
 losses = {
     'surface_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,

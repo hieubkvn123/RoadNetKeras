@@ -6,19 +6,19 @@ import tensorflow as tf
 
 NUM_TRAIN_IMG = 1000 
 DATA_DIR = '../data/'
-TRAIN_IMG_PICKLE = '../data/img.pickle'
-TRAIN_SEG_PICKLE = '../data/segments.pickle'
-TRAIN_EDG_PICKLE = '../data/edges.pickle'
-TRAIN_CEN_PICKLE = '../data/centerlines.pickle'
+TRAIN_IMG_PICKLE = 'data/img.pickle'
+TRAIN_SEG_PICKLE = 'data/segments.pickle'
+TRAIN_EDG_PICKLE = 'data/edges.pickle'
+TRAIN_CEN_PICKLE = 'data/centerlines.pickle'
 
-TEST_IMG_PICKLE = '../data/test_img.pickle'
-TEST_SEG_PICKLE = '../data/test_segments.pickle'
-TEST_EDG_PICKLE = '../data/test_edges.pickle'
-TEST_CEN_PICKLE = '../data/test_centerlines.pickle'
+TEST_IMG_PICKLE = 'data/test_img.pickle'
+TEST_SEG_PICKLE = 'data/test_segments.pickle'
+TEST_EDG_PICKLE = 'data/test_edges.pickle'
+TEST_CEN_PICKLE = 'data/test_centerlines.pickle'
 
 TRAIN_SET = [2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 TEST_SET  = [1,16,17,18,19,20]
-H, W, C, C_ = 128, 128, 3, 1
+H, W, C, C_ = 512, 512, 3, 1
 
 train_images = []
 test_images  = []
@@ -31,7 +31,7 @@ test_labels_segments = []
 test_labels_edges = []
 test_labels_centerlines = []
 
-def cropping_images(img, crop_size=(128,128)):
+def cropping_images(img, crop_size=(512,512)):
     crops = []
 
     H, W = img.shape[0], img.shape[1]
@@ -111,11 +111,9 @@ labels_segments = np.array(labels_segments)[:NUM_TRAIN_IMG]
 labels_edges = np.array(labels_edges)[:NUM_TRAIN_IMG]
 labels_centerlines = np.array(labels_centerlines)[:NUM_TRAIN_IMG]
 
-'''
 labels_segments = tf.one_hot(labels_segments, depth=2)
 labels_edges = tf.one_hot(labels_edges, depth=2)
 labels_centerlines = tf.one_hot(labels_centerlines, depth=2)
-'''
 
 if(not os.path.exists(TEST_IMG_PICKLE) or 
         not os.path.exists(TEST_SEG_PICKLE) or
@@ -171,8 +169,6 @@ test_labels_segments = np.array(test_labels_segments)
 test_labels_edges = np.array(test_labels_edges)
 test_labels_centerlines = np.array(test_labels_centerlines)
 
-'''
 test_labels_segments = tf.one_hot(test_labels_segments, depth=2)
 test_labels_edges = tf.one_hot(test_labels_edges, depth=2)
 test_labels_centerlines = tf.one_hot(test_labels_centerlines, depth=2)
-'''

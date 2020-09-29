@@ -11,7 +11,7 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras import backend as K
 
 class RoadNet(object):
-    def __init__(self, input_shape=(128,128,3)):
+    def __init__(self, input_shape=(512,512,3)):
         self.input_shape=input_shape
         self.centerline_net = SideNet(name='centerline')
         self.edge_net = SideNet(name='edge')
@@ -24,28 +24,12 @@ class RoadNet(object):
         self.gamma = 1.0 # for regularization 
         self.eta   = 1.0 # for generalization
 
-    def custom_ce_loss(self, y_true, y_pred):
-        _epsilon = tf.convert_to_tensor(K.epsilon(), y_pred.dtype.base_dtype)
-        logits = (tf.nn.sigmoid(y_pred) - 0.5) / 0.5
-        y_true = tf.cast(y_true, tf.float32)
-
-        count_neg = tf.reduce_sum(1 - y_true)
-        count_pos = tf.reduce_sum(y_true)
-        beta = count_neg/(count_neg + count_pos)
-
-        pos_loss = beta * y_true * (-tf.nn.sigmoid(logits))
-        neg_loss = (1 - beta) * (1 - y_true) * (-tf.nn.sigmoid(logits))
-
-        res = pos_loss + neg_loss
-
-        return res
-
     def cross_entropy_balanced(self, y_true, y_pred):
         _epsilon = tf.convert_to_tensor(K.epsilon(), y_pred.dtype.base_dtype)
-        # y_pred = tf.clip_by_value(y_pred, _epsilon, 1 - _epsilon)
+        y_pred = tf.clip_by_value(y_pred, _epsilon, 1 - _epsilon)
         # y_pred = tf.math.log(y_pred/(1-y_pred))
-        y_pred = (tf.nn.sigmoid(y_pred) - 0.5)/0.5
-        #y_pred = -tf.math.log((1/tf.nn.sigmoid(y_pred)) - 1)
+        # y_pred = (tf.nn.sigmoid(y_pred) - 0.5)/0.5
+        y_pred = -tf.math.log((1/tf.nn.sigmoid(y_pred)) - 1)
 
         y_true = tf.cast(y_true, tf.float32)
 

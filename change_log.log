@@ -8,3 +8,14 @@ Change 1 :
  	negative and positive classes 
 
  - checkpoint file : model_1.weights.hdf5
+
+Change 2 : 
+ - Location : ver_3
+ - Description : Similar to base training set but resolution equals 512 x 512 x 3
+ - Effect : None
+ - checkpoint file : ver_3/checkpoints/model_3.weights.hdf5
+
+
+
+NOTE :
+ - First backup : model_1.weightes.hdf5 to google drive

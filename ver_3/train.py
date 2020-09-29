@@ -24,11 +24,11 @@ parser.add_argument('-p', '--patience', required=False, help='Number of patient 
 parser.add_argument('-c', '--checkpoint', required=False, help='Path to checkpoint file')
 args = vars(parser.parse_args())
 
-DATA_DIR = '../data/'
+DATA_DIR = 'data/'
 NUM_TRAIN_IMG=100
 EPOCHS = 1000
-BATCH_SIZE=32
-PATIENCE=15
+BATCH_SIZE=1
+PATIENCE=30
 MODEL_CHECKPOINT = 'checkpoints/model_3.weights.hdf5'
 
 ### Create checkpoints directory if not exists ###
@@ -70,12 +70,12 @@ def lr_decay(i, lr):
 callbacks = [
     ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True),
     EarlyStopping(patience=PATIENCE, verbose=1),
-    CSVLogger('training_2.log.csv', append=True)
+    CSVLogger('training.log.csv', append=True),
+    LearningRateScheduler(lr_decay)
 ]
 
 balanced_loss = net.weighted_binary_crossentropy()
 balanced_loss_with_l2 = net.weighted_binary_crossentropy_with_l2()
-weighted_ce_with_logits = net.cross_entropy_balanced
 
 losses = {
     'surface_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,
@@ -87,15 +87,15 @@ losses = {
     'surface_side_output_4' : balanced_loss,
     'surface_side_output_5' : balanced_loss,
 
-    'edge_side_output_1' : weighted_ce_with_logits, #balanced_loss, 
-    'edge_side_output_2' : weighted_ce_with_logits, # balanced_loss,
-    'edge_side_output_3' : weighted_ce_with_logits, # balanced_loss,
-    'edge_side_output_4' : weighted_ce_with_logits, # balanced_loss,
+    'edge_side_output_1' : balanced_loss, 
+    'edge_side_output_2' : balanced_loss,
+    'edge_side_output_3' : balanced_loss,
+    'edge_side_output_4' : balanced_loss,
 
-    'line_side_output_1' : weighted_ce_with_logits, #balanced_loss, 
-    'line_side_output_2' : weighted_ce_with_logits, # balanced_loss,
-    'line_side_output_3' : weighted_ce_with_logits, #balanced_loss,
-    'line_side_output_4' : weighted_ce_with_logits  # balanced_loss
+    'line_side_output_1' : balanced_loss, 
+    'line_side_output_2' : balanced_loss,
+    'line_side_output_3' : balanced_loss,
+    'line_side_output_4' : balanced_loss
 }
 
 '''
@@ -187,11 +187,11 @@ y_test = {
      'line_side_output_4' : test_labels_centerlines 
 }
 
-adam = tf.keras.optimizers.SGD(lr=1e-3, momentum=0.9)
+adam = tf.keras.optimizers.SGD(lr=5e-5, momentum=0.9)
 class MyMeanIOU(tf.keras.metrics.MeanIoU):
     def update_state(self, y_true, y_pred, sample_weight=None):
         return super().update_state(tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight)
-mean_iou = tf.keras.metrics.MeanIoU(num_classes=2) #MyMeanIOU(num_classes=2)
+mean_iou = MyMeanIOU(num_classes=2)
 model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights, metrics=[mean_iou])
-history = model.fit(train_images, y=y, validation_split=0.3, epochs=EPOCHS, callbacks=callbacks, batch_size=BATCH_SIZE)
+history = model.fit(train_images, y=y, validation_split=0.1, epochs=EPOCHS, callbacks=callbacks, batch_size=BATCH_SIZE)
 
