@@ -117,7 +117,7 @@ class RoadNet(object):
 
             l2_norm = tf.reduce_mean((y_pred - y_true) ** 2) * 0.5
 
-            return res + l2_norm
+            return res + 2.0 * l2_norm
 
         return loss
 

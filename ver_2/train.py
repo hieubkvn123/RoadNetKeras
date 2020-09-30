@@ -75,7 +75,7 @@ callbacks = [
 
 balanced_loss = net.weighted_binary_crossentropy()
 balanced_loss_with_l2 = net.weighted_binary_crossentropy_with_l2()
-weighted_ce_with_logits = net.cross_entropy_balanced
+# weighted_ce_with_logits = net.cross_entropy_balanced
 
 losses = {
     'surface_final_output' : balanced_loss_with_l2,# net.weighted_binary_crossentropy,
@@ -87,15 +87,15 @@ losses = {
     'surface_side_output_4' : balanced_loss,
     'surface_side_output_5' : balanced_loss,
 
-    'edge_side_output_1' : weighted_ce_with_logits, #balanced_loss, 
-    'edge_side_output_2' : weighted_ce_with_logits, # balanced_loss,
-    'edge_side_output_3' : weighted_ce_with_logits, # balanced_loss,
-    'edge_side_output_4' : weighted_ce_with_logits, # balanced_loss,
+    'edge_side_output_1' : balanced_loss, #balanced_loss, 
+    'edge_side_output_2' : balanced_loss, # balanced_loss,
+    'edge_side_output_3' : balanced_loss, # balanced_loss,
+    'edge_side_output_4' : balanced_loss, # balanced_loss,
 
-    'line_side_output_1' : weighted_ce_with_logits, #balanced_loss, 
-    'line_side_output_2' : weighted_ce_with_logits, # balanced_loss,
-    'line_side_output_3' : weighted_ce_with_logits, #balanced_loss,
-    'line_side_output_4' : weighted_ce_with_logits  # balanced_loss
+    'line_side_output_1' : balanced_loss, #balanced_loss, 
+    'line_side_output_2' : balanced_loss, # balanced_loss,
+    'line_side_output_3' : balanced_loss, #balanced_loss,
+    'line_side_output_4' : balanced_loss  # balanced_loss
 }
 
 '''
@@ -126,21 +126,21 @@ loss_weights = {
     'edge_final_output' : 1,
     'line_final_output' : 1,
 
-    'surface_side_output_1' : 0.1,
-    'surface_side_output_2' : 0.2,
-    'surface_side_output_3' : 0.3,
-    'surface_side_output_4' : 0.4,
+    'surface_side_output_1' : 0.5,
+    'surface_side_output_2' : 0.75,
+    'surface_side_output_3' : 1.0,
+    'surface_side_output_4' : 0.75,
     'surface_side_output_5' : 0.5,
  
-    'edge_side_output_1' : 0.1,
-    'edge_side_output_2' : 0.2,
-    'edge_side_output_3' : 0.3,
-    'edge_side_output_4' : 0.4,
+    'edge_side_output_1' : 0.5,
+    'edge_side_output_2' : 0.75,
+    'edge_side_output_3' : 1.0,
+    'edge_side_output_4' : 0.75,
 
-    'line_side_output_1' : 0.1,
-    'line_side_output_2' : 0.2,
-    'line_side_output_3' : 0.3,
-    'line_side_output_4' : 0.4 
+    'line_side_output_1' : 0.5,
+    'line_side_output_2' : 0.75,
+    'line_side_output_3' : 1.0,
+    'line_side_output_4' : 0.75 
 }
 
 y = {
@@ -187,7 +187,7 @@ y_test = {
      'line_side_output_4' : test_labels_centerlines 
 }
 
-adam = tf.keras.optimizers.SGD(lr=1e-3, momentum=0.9)
+adam = tf.keras.optimizers.Adam(lr=1e-3, beta_1=0.9,beta_2=0.999, amsgrad=True)
 class MyMeanIOU(tf.keras.metrics.MeanIoU):
     def update_state(self, y_true, y_pred, sample_weight=None):
         return super().update_state(tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight)

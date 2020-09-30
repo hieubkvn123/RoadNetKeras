@@ -88,15 +88,15 @@ losses = {
     'surface_side_output_4' : balanced_loss,
     'surface_side_output_5' : balanced_loss,
 
-    'edge_side_output_1' : weighted_ce_with_logits, 
-    'edge_side_output_2' : weighted_ce_with_logits,
-    'edge_side_output_3' : weighted_ce_with_logits,
-    'edge_side_output_4' : weighted_ce_with_logits,
+    'edge_side_output_1' : balanced_loss, 
+    'edge_side_output_2' : balanced_loss,
+    'edge_side_output_3' : balanced_loss,
+    'edge_side_output_4' : balanced_loss,
 
-    'line_side_output_1' : weighted_ce_with_logits, 
-    'line_side_output_2' : weighted_ce_with_logits,
-    'line_side_output_3' : weighted_ce_with_logits,
-    'line_side_output_4' : weighted_ce_with_logits
+    'line_side_output_1' : balanced_loss, 
+    'line_side_output_2' : balanced_loss,
+    'line_side_output_3' : balanced_loss,
+    'line_side_output_4' : balanced_loss,
 }
 
 '''
@@ -127,21 +127,21 @@ loss_weights = {
     'edge_final_output' : 1,
     'line_final_output' : 1,
 
-    'surface_side_output_1' : 0.1,
-    'surface_side_output_2' : 0.2,
-    'surface_side_output_3' : 0.3,
-    'surface_side_output_4' : 0.4,
+    'surface_side_output_1' : 0.5,
+    'surface_side_output_2' : 0.75,
+    'surface_side_output_3' : 1.0,
+    'surface_side_output_4' : 0.75,
     'surface_side_output_5' : 0.5,
  
-    'edge_side_output_1' : 0.1,
-    'edge_side_output_2' : 0.2,
-    'edge_side_output_3' : 0.3,
-    'edge_side_output_4' : 0.4,
+    'edge_side_output_1' : 0.5,
+    'edge_side_output_2' : 0.75,
+    'edge_side_output_3' : 1.0,
+    'edge_side_output_4' : 0.5,
 
-    'line_side_output_1' : 0.1,
-    'line_side_output_2' : 0.2,
-    'line_side_output_3' : 0.3,
-    'line_side_output_4' : 0.4 
+    'line_side_output_1' : 0.5,
+    'line_side_output_2' : 0.75,
+    'line_side_output_3' : 1.0,
+    'line_side_output_4' : 0.75 
 }
 
 y = {
