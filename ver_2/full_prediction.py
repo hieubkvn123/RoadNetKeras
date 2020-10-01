@@ -98,7 +98,7 @@ for i in range(ratio_h):
     if(i == 0):
         full_image_line = horizontal_image
     else:
-        full_image_line = cv2.vconcat([full_image, horizontal_image])
+        full_image_line = cv2.vconcat([full_image_line, horizontal_image])
 
 basename = os.path.basename(TEST_IMG)
 filename = basename.split('.')[0]

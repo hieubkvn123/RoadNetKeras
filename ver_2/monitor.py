@@ -11,7 +11,11 @@ def is_running(script):
 
     return False
 
+TIME_LIMIT = 36000
+start = time.time()
 while(True):
+    if(time.time() - start >= TIME_LIMIT):
+        break
     time.sleep(10) # query every 10 seconds
 
     if(is_running("train.py")):

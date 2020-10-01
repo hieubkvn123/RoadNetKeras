@@ -7,7 +7,7 @@ from roadnet import RoadNet
 from data_loader import train_images, labels_segments
 
 NUM_TRAIN = 100
-MODEL_CHECKPOINT = 'checkpoints/model_1.weights.hdf5'
+MODEL_CHECKPOINT = 'checkpoints/model_4.weights.hdf5'
 
 counter = 0
 num_test = 3
@@ -38,9 +38,9 @@ while(counter < num_test):
 
 for idx, (img, gt) in enumerate(zip(test_images, test_ground_truth)):
     map_ = model.predict(np.array([img]))[0][0]
-    map_ = np.argmax(map_, axis=2)
     
-    gt = np.argmax(gt, axis=2)
+    map_[map_ > 0.5] = 1
+    map_[map_ < 0.5] = 0
 
     ax[idx][0].imshow(img)
     ax[idx][1].imshow(gt)

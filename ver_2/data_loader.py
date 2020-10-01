@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import tensorflow as tf
 
-NUM_TRAIN_IMG = 1000 
+NUM_TRAIN_IMG = 1000  
 DATA_DIR = '../data/'
 TRAIN_IMG_PICKLE = '../data/img.pickle'
 TRAIN_SEG_PICKLE = '../data/segments.pickle'
@@ -176,3 +176,26 @@ test_labels_segments = tf.one_hot(test_labels_segments, depth=2)
 test_labels_edges = tf.one_hot(test_labels_edges, depth=2)
 test_labels_centerlines = tf.one_hot(test_labels_centerlines, depth=2)
 '''
+
+print("[INFO] Filtering blank image patches ... ")
+counter = 0
+while(True):
+    if(counter == train_images.shape[0]):
+        break
+
+    seg = labels_segments[counter]
+    line = labels_centerlines[counter]
+    edge = labels_edges[counter]
+
+    if(np.sum(seg) == 0 or np.sum(line) == 0 or np.sum(edge) == 0):
+        train_images = np.delete(train_images, counter, axis=0)
+        labels_segments = np.delete(labels_segments, counter, axis=0)
+        labels_centerlines = np.delete(labels_centerlines, counter, axis=0)
+        labels_edges = np.delete(labels_edges, counter, axis=0)
+    counter += 1
+
+print('[INFO] After filtering : ')
+print('  %d segmentation images ' % labels_segments.shape[0])
+print('  %d centerline images ' % labels_centerlines.shape[0])
+print('  %d edges images ' % labels_edges.shape[0])
+print('  %d train images ' % train_images.shape[0])

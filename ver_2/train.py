@@ -29,7 +29,7 @@ NUM_TRAIN_IMG=100
 EPOCHS = 1000
 BATCH_SIZE=32
 PATIENCE=15
-MODEL_CHECKPOINT = 'checkpoints/model_3.weights.hdf5'
+MODEL_CHECKPOINT = 'checkpoints/model_4.weights.hdf5'
 
 ### Create checkpoints directory if not exists ###
 if(not os.path.exists('checkpoints')):
@@ -187,7 +187,7 @@ y_test = {
      'line_side_output_4' : test_labels_centerlines 
 }
 
-adam = tf.keras.optimizers.Adam(lr=1e-3, beta_1=0.9,beta_2=0.999, amsgrad=True)
+adam = tf.keras.optimizers.Adam(lr=1e-4, beta_1=0.9,beta_2=0.999, amsgrad=True)
 class MyMeanIOU(tf.keras.metrics.MeanIoU):
     def update_state(self, y_true, y_pred, sample_weight=None):
         return super().update_state(tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight)

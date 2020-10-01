@@ -3,8 +3,8 @@ import sys
 import numpy as np
 import tensorflow as tf
 
-from models_1 import SideNet
-from models_1 import RoadSurfaceNet
+from models_2 import SideNet
+from models_2 import RoadSurfaceNet
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
@@ -24,15 +24,11 @@ class RoadNet(object):
         self.gamma = 1.0 # for regularization 
         self.eta   = 1.0 # for generalization
 
-    def weighted_binary_crossentropy(self, from_logits=False): 
+    def weighted_binary_crossentropy(self): 
         def loss(y_true, y_pred):
             _epsilon = tf.convert_to_tensor(K.epsilon(), y_pred.dtype.base_dtype)
             y_pred = tf.clip_by_value(y_pred, _epsilon, 1 - _epsilon)
-            # y_pred = tf.math.log(y_pred/(1-y_pred))
-            # y_pred = (tf.nn.sigmoid(y_pred) - 0.5)/0.5
-            y_pred = -tf.math.log((1/tf.nn.sigmoid(y_pred)) - 1)
-            if(from_logits): ### when evaluating concat output ###
-                y_pred = -tf.math.log((1-y_pred)/(1+y_pred))
+            logits = tf.math.log(y_pred/(1-y_pred))
 
             y_true = tf.cast(y_true, tf.float32)
 
@@ -45,7 +41,7 @@ class RoadNet(object):
             ### Calc pos_weight ###
             pos_weight = beta / (1-beta)
 
-            cost = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, labels=y_true, pos_weight=pos_weight)
+            cost = tf.nn.weighted_cross_entropy_with_logits(logits=logits, labels=y_true, pos_weight=pos_weight)
             cost = tf.reduce_mean(cost) * (1 - beta)
 
             return cost 
@@ -55,18 +51,12 @@ class RoadNet(object):
     def weighted_binary_crossentropy_with_l2(self): 
         def loss(y_true, y_pred):
             # res = self.cross_entropy_balanced(y_true, y_pred)
-            res = self.weighted_binary_crossentropy(from_logits=False)(y_true, y_pred)
+            res = self.weighted_binary_crossentropy()(y_true, y_pred)
 
             ### L2 normalization ###
-            ### l2 norm = 1/(2|X|) * ||Y- P||2
-            
-            _epsilon = tf.convert_to_tensor(K.epsilon(), y_pred.dtype.base_dtype)
-            y_pred = tf.clip_by_value(y_pred, _epsilon, 1 - _epsilon)
-            # y_pred = tf.math.log(y_pred/(1-y_pred))
-
             y_true = tf.cast(y_true, dtype=tf.float32)
 
-            l2_norm = tf.reduce_mean((tf.nn.sigmoid(y_pred) - y_true) ** 2) * 0.5
+            l2_norm = tf.reduce_mean((y_pred - y_true) ** 2) * 0.5
 
             return res + 2.0 * l2_norm
 
