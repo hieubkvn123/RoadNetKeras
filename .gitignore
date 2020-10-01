@@ -1,5 +1,6 @@
 data/*.pickle
 checkpoints/*.hdf5
 ver_2/checkpoints/*.hdf5
+ver_2/data/*.pickle
 ver_3/checkpoints/*.hdf5
 ver_3/data/*.pickle

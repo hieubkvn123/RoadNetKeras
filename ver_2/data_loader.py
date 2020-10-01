@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import tensorflow as tf
 
-NUM_TRAIN_IMG = 1000  
+NUM_TRAIN_IMG = 10000  
 DATA_DIR = '../data/'
 TRAIN_IMG_PICKLE = '../data/img.pickle'
 TRAIN_SEG_PICKLE = '../data/segments.pickle'
@@ -180,7 +180,13 @@ test_labels_centerlines = tf.one_hot(test_labels_centerlines, depth=2)
 print("[INFO] Filtering blank image patches ... ")
 counter = 0
 while(True):
-    if(counter == train_images.shape[0]):
+    if(os.path.exists('data/images_noblank.pickle') and \
+            os.path.exists('data/seg_noblank.pickle') and \
+            os.path.exists('data/line_noblank.pickle') and \
+            os.path.exists('data/edge_noblank.pickle')):
+        break
+
+    if(counter >= train_images.shape[0]):
         break
 
     seg = labels_segments[counter]
@@ -192,10 +198,31 @@ while(True):
         labels_segments = np.delete(labels_segments, counter, axis=0)
         labels_centerlines = np.delete(labels_centerlines, counter, axis=0)
         labels_edges = np.delete(labels_edges, counter, axis=0)
+        counter -= 1
+
     counter += 1
+
+if(os.path.exists('data/images_noblank.pickle') and \
+        os.path.exists('data/seg_noblank.pickle') and \
+        os.path.exists('data/line_noblank.pickle') and \
+        os.path.exists('data/edge_noblank.pickle')):
+    print('[INFO] Images already filtered ... ')
+    train_images = pickle.load(open('data/images_noblank.pickle', 'rb'))
+    labels_segments = pickle.load(open('data/seg_noblank.pickle', 'rb'))
+    labels_centerlines = pickle.load(open('data/line_noblank.pickle', 'rb'))
+    labels_edges = pickle.load(open('data/edge_noblank.pickle', 'rb'))
 
 print('[INFO] After filtering : ')
 print('  %d segmentation images ' % labels_segments.shape[0])
 print('  %d centerline images ' % labels_centerlines.shape[0])
 print('  %d edges images ' % labels_edges.shape[0])
 print('  %d train images ' % train_images.shape[0])
+
+if(not (os.path.exists('data/images_noblank.pickle') and \
+        os.path.exists('data/seg_noblank.pickle') and \
+        os.path.exists('data/line_noblank.pickle') and \
+        os.path.exists('data/edge_noblank.pickle'))):
+    pickle.dump(train_images, open('data/images_noblank.pickle', 'wb'))
+    pickle.dump(labels_segments, open('data/seg_noblank.pickle', 'wb'))
+    pickle.dump(labels_centerlines, open('data/line_noblank.pickle', 'wb'))
+    pickle.dump(labels_edges, open('data/edge_noblank.pickle', 'wb'))
