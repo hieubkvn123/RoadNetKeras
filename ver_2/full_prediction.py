@@ -142,5 +142,5 @@ fig.suptitle('Full prediction on image : %s' %  TEST_IMG, fontsize=16)
 plt.show()
 
 print('[INFO] Saving prediction result in %s' % save_file_name)
-fig.tight_layout(pad=0)
-fig.savefig(save_file_name)
+fig.tight_layout()
+fig.savefig(save_file_name, bbox_inches='tight')
