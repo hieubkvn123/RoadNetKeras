@@ -127,6 +127,11 @@ full_image_edge_3d[full_image_edge == 0] = [0,0,0]
 kernel = np.ones((5,5), np.uint8)
 full_image_edge_3d = cv2.dilate(full_image_edge_3d, kernel, iterations=1)
 
+### Smoothen edges ###
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+full_image_line_3d = cv2.morphologyEx(full_image_line_3d, cv2.MORPH_OPEN, kernel, iterations=1)
+full_image_edge_3d = cv2.morphologyEx(full_image_edge_3d, cv2.MORPH_OPEN, kernel, iterations=1)
+
 fig, ax = plt.subplots(2,2, figsize=(30, 30))
 ax[0][0].imshow(original)
 ax[0][1].imshow(full_image)
