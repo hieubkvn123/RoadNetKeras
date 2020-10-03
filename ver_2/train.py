@@ -57,7 +57,7 @@ if(os.path.exists(MODEL_CHECKPOINT)):
 ### Traditional lr decay instead of paper approach ###
 def lr_decay(epoch, lr):
     decay_rate = 1/EPOCHS
-    init_lr = 5e-6
+    init_lr = 1e-4
 
     return init_lr * (1.0/(1.0 + decay_rate * epoch))
 
@@ -182,7 +182,7 @@ y_test = {
      'line_side_output_4' : test_labels_centerlines 
 }
 
-adam = tf.keras.optimizers.Adam(lr=5e-6, beta_1=0.9,beta_2=0.999, amsgrad=True)
+adam = tf.keras.optimizers.Adam(lr=1e-4, beta_1=0.9,beta_2=0.999, amsgrad=True)
 class MyMeanIOU(tf.keras.metrics.MeanIoU):
     def update_state(self, y_true, y_pred, sample_weight=None):
         return super().update_state(tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight)

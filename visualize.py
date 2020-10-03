@@ -22,7 +22,7 @@ columns = [
     'val_line_final_output_my_mean_iou'
 ]
 
-data_frame = data_frame[columns]
+data_frame = data_frame[columns][3021:]
 data_frame['epoch'] = list(range(len(data_frame['epoch'])))
 
 fig1, ax1 = plt.subplots(2,2, figsize=(15,15))
