@@ -38,6 +38,7 @@ src_ds = None
 
 feature_collection = {}
 feature_collection['type'] = 'FeatureCollection'
+feature_collection['properties'] = {'props':'val'}
 feature_collection['features'] = []
 
 def to_geojson(file_name):
