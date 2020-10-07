@@ -2,8 +2,9 @@ import rasterio
 import rasterio.features
 import rasterio.warp
 
-def to_geojson(image_file):
-    with rasterio.open(image_file) as dataset:
+def to_geojson(image_file):  
+    profile = {'driver': 'GTiff', 'height': 100, 'width': 100, 'count': 1, 'dtype': rasterio.uint8}
+    with rasterio.open(image_file, **profile) as dataset:
         mask = dataset.dataset_mask()
 
         ### Extract feature shapes and values from the array ###
