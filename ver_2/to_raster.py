@@ -54,6 +54,7 @@ def to_geojson(file_name):
     counter = 0
     for shape in shapes:
         print('[*] Sparsing shape #{:04d}'.format(counter + 1))
+        object_['type'] = 'Feature'
         object_['properties'] = {'prop{:01d}'.format(counter) : 'prop{:01d}'.format(counter)}
         object_['geometry'] = shape
 
