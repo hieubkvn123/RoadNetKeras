@@ -1,45 +1,54 @@
-import time
+import cv2
 import json
-
 import rasterio
-import rasterio.features
-import rasterio.warp
-import pprint
 
-from osgeo import gdal, osr
+from rasterio import features
+from rasterio import Affine
+from argparse import ArgumentParser
 
-src_filename = '../data/2/segmentation.png'
-dst_filename = 'destination.tif'
+parser = ArgumentParser()
+parser.add_argument('-i', '--image', required=True, help='Path to rasterized image')
+parser.add_argument('--top', required=True, help='Top coordinate of the given image')
+parser.add_argument('--left', required=True, help='Left coordinate of the given image')
+parser.add_argument('--bottom', required=True, help='Bottom coordinate of the given image')
+parser.add_argument('--right', required=True, help='Right coordinate of the given image')
+args = vars(parser.parse_args())
 
-feature_collection = {}
-feature_collection['type'] = 'FeatureCollection'
-feature_collection['features'] = []
+image = cv2.imread(args['image'])
+image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+mask = image != 255
+H, W = image.shape
 
-def to_geojson(file_name):
-    with rasterio.open(file_name) as src:
-        blue = src.read(3)
+top = float(args['top'])
+right = float(args['right'])
+bottom = float(args['bottom'])
+left = float(args['left'])
 
-    mask = blue != 255
-    shapes = rasterio.features.shapes(blue, mask=mask, transform=src.transform)
+X_ratio = (right - left)/float(W)
+Y_ratio = (top - bottom)/float(H)
 
-    object_ = {}
-    object_['type'] = 'Feature'
-    
-    counter = 0
-    for shape in shapes:
-        print('[*] Sparsing shape #{:04d}'.format(counter + 1))
-        object_['type'] = 'Feature'
-        object_['geometry'] = shape
-        object_['properties'] = {'prop{:01d}'.format(counter) : 'prop{:01d}'.format(counter)}
-        
-        feature_collection['features'].append(object_)
-        counter += 1
+transform = Affine(X_ratio, 0, left, 0, Y_ratio, top)
 
-    feature_collection['properties'] = {'props':'val'}
-    
-    filename = 'geojson/obj_%.2f.geojson' % time.time()
-    print('[*] Writing to file : %s' % filename)
-    json.dump(feature_collection, open(filename, 'w'), indent=2)
+### Extract shapes from the positive source image ###
+shapes = features.shapes(image, mask=mask, transform=transform)
+shapes = list(shapes)
 
+### Convert the shapes into geojson ###
+results = []
+for (g, v) in shapes:
+    shape = {
+        'type' : 'Feature',
+        'properties' : {'raster_val' : v},
+        'geometry' : g
+    }
 
-to_geojson(src_filename)
+    results.append(shape)
+
+collection = {
+    'type' : 'FeatureCollection',
+    'features' : results
+}
+
+print('[INFO] Parsing the image into geojson ... ')
+with open('geojson/object.json', 'w') as dst:
+    json.dump(collection, dst, indent=4)

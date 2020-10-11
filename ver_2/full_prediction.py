@@ -68,6 +68,8 @@ full_image_line = None
 full_image_edge = None
 
 def parse_to_binary_map(map_):
+    ### Make foreground black and background white ###
+    ''' Easier to parse to geojson later on'''
     map_[map_ > 0.5] = 1
     map_[map_ < 0.5] = 0
 
@@ -106,31 +108,28 @@ for i in range(ratio_h):
 basename = os.path.basename(TEST_IMG)
 filename = basename.split('.')[0]
 save_file_name = "sample_predictions/full_prediction_" + filename + ".jpg"
+line_file_name = "sample_predictions/centerline_" + filename + ".jpg"
 
 full_image *= 255
 full_image = full_image.astype(np.uint8)
 
 full_image_line_3d = np.zeros((full_image.shape[0], full_image.shape[1], 3))
-full_image_line_3d[full_image_line == 1] = [255, 255, 255]
-full_image_line_3d[full_image_line == 0] = [0,0,0]
+full_image_line_3d[full_image_line == 0] = [0, 0, 0]
+full_image_line_3d[full_image_line == 1] = [255,255,255]
 
 ### dilate image abit for readability ###
 kernel = np.ones((5,5), np.uint8)
 full_image_line_3d = cv2.dilate(full_image_line_3d, kernel, iterations=1)
-
+full_image_line_3d = 255 - full_image_line_3d
 
 full_image_edge_3d = np.zeros((full_image.shape[0], full_image.shape[1], 3))
-full_image_edge_3d[full_image_edge == 1] = [255, 255, 255]
-full_image_edge_3d[full_image_edge == 0] = [0,0,0]
+full_image_edge_3d[full_image_edge == 0] = [0, 0, 0]
+full_image_edge_3d[full_image_edge == 1] = [255,255,255]
 
 ### dilate image abit for readability ###
 kernel = np.ones((5,5), np.uint8)
 full_image_edge_3d = cv2.dilate(full_image_edge_3d, kernel, iterations=1)
-
-### Smoothen edges ###
-kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-full_image_line_3d = cv2.morphologyEx(full_image_line_3d, cv2.MORPH_OPEN, kernel, iterations=1)
-full_image_edge_3d = cv2.morphologyEx(full_image_edge_3d, cv2.MORPH_OPEN, kernel, iterations=1)
+full_image_edge_3d = 255 - full_image_edge_3d ### Invert the image ###
 
 fig, ax = plt.subplots(2,2, figsize=(30, 30))
 ax[0][0].imshow(original)
@@ -148,4 +147,5 @@ plt.show()
 
 print('[INFO] Saving prediction result in %s' % save_file_name)
 fig.tight_layout()
+cv2.imwrite(line_file_name, full_image_line_3d)
 fig.savefig(save_file_name, bbox_inches='tight')
