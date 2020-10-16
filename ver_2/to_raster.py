@@ -14,6 +14,7 @@ parser.add_argument('--bottom', required=True, help='Bottom coordinate of the gi
 parser.add_argument('--right', required=True, help='Right coordinate of the given image')
 args = vars(parser.parse_args())
 
+file_prefix = args['image'].split('/')[-1]
 image = cv2.imread(args['image'])
 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 mask = image != 255
@@ -50,5 +51,5 @@ collection = {
 }
 
 print('[INFO] Parsing the image into geojson ... ')
-with open('geojson/object.json', 'w') as dst:
+with open('geojson/{}.json'.format(file_prefix), 'w') as dst:
     json.dump(collection, dst, indent=4)
