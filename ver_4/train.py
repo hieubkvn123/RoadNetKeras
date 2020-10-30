@@ -187,6 +187,6 @@ class MyMeanIOU(tf.keras.metrics.MeanIoU):
     def update_state(self, y_true, y_pred, sample_weight=None):
         return super().update_state(tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight)
 mean_iou = tf.keras.metrics.MeanIoU(num_classes=2) #MyMeanIOU(num_classes=2)
-model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights, metrics=[mean_iou])
+model.compile(optimizer=adam, loss=losses, loss_weights=loss_weights)
 history = model.fit(train_images, y=y, validation_data=(test_images, y_test), epochs=EPOCHS, callbacks=callbacks, batch_size=BATCH_SIZE)
 
