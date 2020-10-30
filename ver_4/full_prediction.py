@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 
 from roadnet import RoadNet
 from tensorflow.keras.models import Model
-from data_loader import train_images, labels_segments
+# from data_loader import train_images, labels_segments
 
 parser = ArgumentParser()
 parser.add_argument('-m', '--model', required=False, help='Path to the model checkpoint')
