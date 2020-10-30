@@ -13,13 +13,7 @@ columns = [
     'edge_final_output_loss',
     'val_edge_final_output_loss',
     'line_final_output_loss',
-    'val_line_final_output_loss',
-    'surface_final_output_mean_io_u',
-    'val_surface_final_output_mean_io_u',
-    'edge_final_output_mean_io_u',
-    'val_edge_final_output_mean_io_u',
-    'line_final_output_mean_io_u',
-    'val_line_final_output_mean_io_u'
+    'val_line_final_output_loss'
 ]
 
 data_frame = data_frame[columns]
