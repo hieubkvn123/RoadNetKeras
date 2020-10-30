@@ -22,7 +22,7 @@ from tensorflow.keras.initializers import GlorotNormal
 
 class RoadSurfaceNet(object):
     def __init__(self, input_shape=(128,128,3), name='surface'):
-        lambda_ = 1e-1
+        lambda_ = 1e-4
         self.input_shape=input_shape
         self.name=name
         self.xavier=GlorotNormal()
