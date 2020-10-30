@@ -7,15 +7,19 @@ Change 1 :
  - Effect : Now predicted map is less biased and started to predict both
  	negative and positive classes 
 
- - checkpoint file : model_1.weights.hdf5
+ - Checkpoint file : model_1.weights.hdf5
 
 Change 2 : 
  - Location : ver_3
  - Description : Similar to base training set but resolution equals 512 x 512 x 3
  - Effect : None
- - checkpoint file : ver_3/checkpoints/model_3.weights.hdf5
+ - Checkpoint file : ver_3/checkpoints/model_3.weights.hdf5
 
-
+Change 3 :
+ - Location : ver_4
+ - Description : Add kernel regularizer to all layer in roadnet and add enoising methods
+ - Effect : Not yet
+ - Checkpoint file : ver_4/checkpoints/*.weights.hdf5
 
 NOTE :
  - First backup : model_1.weightes.hdf5 to google drive
