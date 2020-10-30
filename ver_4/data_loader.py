@@ -258,7 +258,7 @@ print('  %d centerline images ' % labels_centerlines.shape[0])
 print('  %d edges images ' % labels_edges.shape[0])
 print('  %d train images ' % train_images.shape[0])
 
-for index in np.random.choice(train_images.shape[0] - 1, int(train_images.shape[0] * 0.333333)):
+for index in np.random.choice(train_images.shape[0] - 1, int(train_images.shape[0] * 0.111111)):
     image = train_images[index]
     segment = labels_segments[index]
     edge = labels_edges[index]
@@ -267,10 +267,10 @@ for index in np.random.choice(train_images.shape[0] - 1, int(train_images.shape[
     preprocess_index = np.random.randint(0, len(preprocessings))
     noisy = preprocessings[preprocess_index](image)
 
-    train_images.extend(np.array([noisy]))
-    labels_segments.extend(np.array([segment]))
-    labels_edges.extend(np.array([edge]))
-    labels_centerlines.extend(np.array([line]))
+    train_images = np.concatenate([train_images, np.array([noisy])])
+    labels_segments = np.concatenate([labels_segments, np.array([segment])])
+    labels_edges = np.concatenate([labels_edges, np.array([edge])])
+    labels_centerlines = np.concatenate([labels_centerlines, np.array([line])])
 
 print('[INFO] After adding noise : ')
 print('  %d segmentation images ' % labels_segments.shape[0])
