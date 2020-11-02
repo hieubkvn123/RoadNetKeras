@@ -127,8 +127,9 @@ full_image_edge_3d[full_image_edge == 0] = [0, 0, 0]
 full_image_edge_3d[full_image_edge == 1] = [255,255,255]
 
 ### dilate image abit for readability ###
-#kernel = np.ones((5,5), np.uint8)
-#full_image_edge_3d = cv2.dilate(full_image_edge_3d, kernel, iterations=1)
+kernel = np.ones((5,5), np.uint8)
+full_image_edge_3d = cv2.dilate(full_image_edge_3d, kernel, iterations=2)
+full_image_edge_3d = cv2.erode(full_image_edge_3d, kernel, iterations=1)
 full_image_edge_3d = 255 - full_image_edge_3d ### Invert the image ###
 
 fig, ax = plt.subplots(2,2, figsize=(30, 30))
