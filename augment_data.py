@@ -32,6 +32,9 @@ for (dir_, dirs, files) in os.walk(data_dir):
             if(not file_.endswith('.tif')):
                 continue
 
+            if(file_.startswith('extra.tif')):
+                continue
+
             abs_path = os.path.join(dir_, file_)
             image = cv2.imread(abs_path)
             new_image = _hist_matching(image, ref_image)
@@ -39,6 +42,12 @@ for (dir_, dirs, files) in os.walk(data_dir):
             file_name = file_.split('.')[0]
             new_file_name = file_name + '_bingmap.png'
             new_abs_path = os.path.join(dir_, new_file_name)
+
+
+            #cv2.imshow('Original Image', image)
+            #cv2.imshow('New Image', new_image)
+            #cv2.imshow('Reference image', ref_image)
+            #cv2.waitKey(0)
 
             cv2.imwrite(new_abs_path, new_image)
             print('[INFO] Wrote image to %s' % new_abs_path)
