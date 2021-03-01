@@ -182,6 +182,7 @@ y_test = {
      'line_side_output_4' : test_labels_centerlines 
 }
 
+print(train_images.shape)
 adam = tf.keras.optimizers.Adam(lr=1e-4, beta_1=0.9,beta_2=0.999, amsgrad=True)
 class MyMeanIOU(tf.keras.metrics.MeanIoU):
     def update_state(self, y_true, y_pred, sample_weight=None):

@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import tensorflow as tf
 
-NUM_TRAIN_IMG = 10000  
+NUM_TRAIN_IMG = -10000  
 DATA_DIR = '../data/'
 TRAIN_IMG_PICKLE = '../data/img.pickle'
 TRAIN_SEG_PICKLE = '../data/segments.pickle'
@@ -60,6 +60,8 @@ if(not os.path.exists(TRAIN_IMG_PICKLE) or
         not os.path.exists(TRAIN_CEN_PICKLE)):
     for entry in TRAIN_SET:
         abs_img_path = DATA_DIR + ("/%d/" % entry) + ("Ottawa-%d.tif" % entry)
+
+        abs_img_path_bingmap = DATA_DIR + ("/%d/" % entry) + ("Ottawa-%d_bingmap.png" % entry)
         abs_surface_path = DATA_DIR + ("/%d/" % entry) + "segmentation.png"
         abs_edge_path = DATA_DIR + ("/%d/" % entry) + "edge.png"
         abs_centerline_path = DATA_DIR + ("/%d/" % entry) + "centerline.png"
@@ -68,6 +70,7 @@ if(not os.path.exists(TRAIN_IMG_PICKLE) or
 
         print(abs_img_path)
         img = cv2.imread(abs_img_path)
+        img_bingmap = cv2.imread(abs_img_path_bingmap)
         edge = cv2.cvtColor(cv2.imread(abs_edge_path), cv2.COLOR_BGR2GRAY)
         surface = cv2.cvtColor(cv2.imread(abs_surface_path), cv2.COLOR_BGR2GRAY)
         centerline = cv2.cvtColor(cv2.imread(abs_centerline_path), cv2.COLOR_BGR2GRAY)
@@ -82,15 +85,22 @@ if(not os.path.exists(TRAIN_IMG_PICKLE) or
         centerline[centerline >= 250] = 0
 
         img_crops = cropping_images(img)
+        img_crops_bingmap = cropping_images(img_bingmap)
         surface_crops = cropping_images(surface) 
         edge_crops = cropping_images(edge)
         centerline_crops = cropping_images(centerline)
 
         train_images.extend(img_crops)
+        train_images.extend(img_crops_bingmap)
+
         labels_segments.extend(surface_crops)
         labels_edges.extend(edge_crops)
         labels_centerlines.extend(centerline_crops)
 
+        labels_segments.extend(surface_crops)
+        labels_edges.extend(edge_crops)
+        labels_centerlines.extend(centerline_crops)
+    
     ### Serializing the data ###
     print('[INFO] Serializing data ...')
     pickle.dump(train_images, open(TRAIN_IMG_PICKLE, 'wb'))
@@ -106,6 +116,7 @@ else:
 
 if(NUM_TRAIN_IMG < 0): NUM_TRAIN_IMG=len(train_images)
 print(np.array(train_images).shape)
+print(np.array(labels_segments).shape)
 train_images = np.array(train_images)[:NUM_TRAIN_IMG].reshape(-1, H, W, C)
 labels_segments = np.array(labels_segments)[:NUM_TRAIN_IMG]
 labels_edges = np.array(labels_edges)[:NUM_TRAIN_IMG]
@@ -201,6 +212,7 @@ while(True):
         counter -= 1
 
     counter += 1
+print('[INFO] Num blank patches : ', counter)
 
 if(os.path.exists('data/images_noblank.pickle') and \
         os.path.exists('data/seg_noblank.pickle') and \
